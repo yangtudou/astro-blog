@@ -136,7 +136,7 @@ abbrlink: theme-guide
 
 在 CJK（中文、日文、韩文）与英文混写的场景下，补充正确的空格，纠正标点符号等。
 
-其他细节请参阅主题作者写的文章[主題上手指南](https://retypeset.radishzz.cc/zh-tw/posts/theme-guide/)
+其他细节请参阅主题作者写的文章 [主題上手指南](https://retypeset.radishzz.cc/zh-tw/posts/theme-guide/)
 
 ---
 
@@ -244,22 +244,22 @@ abbrlink: theme-guide
 
 ```md
 :::gallery
-![测试图片1](../posts/_images/img-test-1.webp)
-![测试图片2](../posts/_images/img-test-1.webp)
-![测试图片3](../posts/_images/img-test-1.webp)
-![测试图片4](../posts/_images/img-test-1.webp)
-![测试图片5](../posts/_images/img-test-1.webp)
+![测试图片 1](../posts/_images/img-test-1.webp)
+![测试图片 2](../posts/_images/img-test-1.webp)
+![测试图片 3](../posts/_images/img-test-1.webp)
+![测试图片 4](../posts/_images/img-test-1.webp)
+![测试图片 5](../posts/_images/img-test-1.webp)
 :::
 ```
 
 #### 效果
 
 :::gallery
-![测试图片1](../posts/_images/img-test-1.webp)
-![测试图片2](../posts/_images/img-test-1.webp)
-![测试图片3](../posts/_images/img-test-1.webp)
-![测试图片4](../posts/_images/img-test-1.webp)
-![测试图片5](../posts/_images/img-test-1.webp)
+![测试图片 1](../posts/_images/img-test-1.webp)
+![测试图片 2](../posts/_images/img-test-1.webp)
+![测试图片 3](../posts/_images/img-test-1.webp)
+![测试图片 4](../posts/_images/img-test-1.webp)
+![测试图片 5](../posts/_images/img-test-1.webp)
 :::
 
 ### GitHub 仓库

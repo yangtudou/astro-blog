@@ -17,7 +17,7 @@ abbrlink: hello-surge-again
 
 ---
 
-![「 如无必要，勿增实体。」](../posts/_images/surge.webp)
+![「如无必要，勿增实体。」](../posts/_images/surge.webp)
 
 ## 契机
 尽管买了 [Surge][Surge] 快两年了，但工作环境的原因一直用的都是 Clash 系的代理软件，所以也没仔细研究过怎么用这个软件。
@@ -28,7 +28,7 @@ abbrlink: hello-surge-again
 因为这样代表我要同时维护两套配置，但事实确实如此。以后会开篇阐述为什么会这样，这里就允许我买个关子吧。
 
 ## 配置
-现在我用的配置是在[**深港有猫配置**][深港有猫配置]基础上做了修改，当然他的配置很棒，注释写的很详细。
+现在我用的配置是在 [**深港有猫配置**][深港有猫配置] 基础上做了修改，当然他的配置很棒，注释写的很详细。
 我只是加入了一些私人化的内容，以下为逐段分析我自己用配置，仅作参考。
 具体异同，需要大家考虑自己的实际使用情况。
 
@@ -40,7 +40,7 @@ abbrlink: hello-surge-again
 ### 全局配置 (General)
 
 #### loglevel
-日志级别: `warning`, `notify(default)`, `info`, `verbose`
+日志级别：`warning`, `notify(default)`, `info`, `verbose`
 ```ini
 loglevel = notify
 ```
@@ -52,7 +52,7 @@ skip-proxy = 127.0.0.1, 192.168.0.0/16, 10.0.0.0/8, 172.16.0.0/12, 100.64.0.0/10
 ```
 
 #### dns-server
-DNS 服务器, 这里之前收到过 Clash DNS 泄露影响, 在配置的时候着重研究了。具体请阅读[Sukka][Sukka]博客内容，受益良多。
+DNS 服务器，这里之前收到过 Clash DNS 泄露影响，在配置的时候着重研究了。具体请阅读 [Sukka][Sukka] 博客内容，受益良多。
 ```ini
 dns-server = system
 ```
