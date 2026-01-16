@@ -59,7 +59,6 @@ const isHome = isHomePage(Astro.url.pathname)
         >
           <PostDate
             date={post.data.published}
-            minutes={post.remarkPluginFrontmatter.minutes}
           />
         </div>
 
@@ -67,7 +66,6 @@ const isHome = isHomePage(Astro.url.pathname)
         <div class="hidden text-3.65 font-time lg:(ml-2.5 inline)">
           <PostDate
             date={post.data.published}
-            minutes={post.remarkPluginFrontmatter.minutes}
           />
         </div>
 
