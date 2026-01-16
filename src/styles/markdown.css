@@ -252,7 +252,7 @@ html.dark .heti :where(u) {
 }
 .heti :where(hr)::before {
   --at-apply: 'whitespace-pre text-6 c-secondary/25 font-serif';
-  content: "*   *   *";
+  content: "•   •   •";
 }
 
 /* Bold */

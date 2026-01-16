@@ -16,7 +16,7 @@ abbrlink: hello-astro
 
 ## 主题配置
 
-配置文件 `📄 src/config.ts` 自定义：
+配置文件 `src/config.ts` 自定义：
 
 - 站点信息
 - 主题配色
@@ -26,13 +26,13 @@ abbrlink: hello-astro
 - 自定义页脚
 - 资源预加载
 
-配置文件 `📄 astro.config.ts` 自定义：语法高亮
+配置文件 `astro.config.ts` 自定义：语法高亮
 
-配置文件 `📄 src/utils/description.ts` 自定义：文章摘要
+配置文件 `src/utils/description.ts` 自定义：文章摘要
 
-配置文件 `📄 src/pages/og/[...image].ts` 自定义：Open Graph 社交卡片
+配置文件 `src/pages/og/[...image].ts` 自定义：Open Graph 社交卡片
 
-xsl 文件 `📄  public/feeds/xxx-style.xsl` 自定义：RSS 订阅页颜色
+xsl 文件 `public/feeds/xxx-style.xsl` 自定义：RSS 订阅页颜色
 
 ### 站点配置
 

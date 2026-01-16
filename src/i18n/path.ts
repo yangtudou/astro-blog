@@ -18,7 +18,7 @@ export function getTagPath(tagName: string, lang: Language): string {
 }
 
 /**
- * Get path to a specific post page with language support
+ * 获取包含语言支持的特定文章页面的路径
  *
  * @param slug Post slug
  * @param lang Current language code

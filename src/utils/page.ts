@@ -9,7 +9,7 @@ function matchPageType(path: string, prefix: string = '') {
     ? path.slice(base.length)
     : path
 
-  // Remove leading and trailing slashes from the path
+  // 移除路径开头和结尾的斜杠
   const normalizedPath = pathWithoutBase.replace(/^\/|\/$/g, '')
 
   // Homepage check: matches root path ('') or language code ('en', 'zh-tw')
@@ -42,10 +42,6 @@ export function isAboutPage(path: string) {
   return matchPageType(path, 'about')
 }
 
-export function isPoetryPage(path: string) {
-  return matchPageType(path, 'poetry')
-}
-
 // Returns page context with language, page types and localization helper
 export function getPageInfo(path: string) {
   const currentLang = getLangFromPath(path)
@@ -53,7 +49,6 @@ export function getPageInfo(path: string) {
   const isPost = isPostPage(path)
   const isTag = isTagPage(path)
   const isAbout = isAboutPage(path)
-  const isPoetry = isPoetryPage(path)
 
   return {
     currentLang,
@@ -61,7 +56,6 @@ export function getPageInfo(path: string) {
     isPost,
     isTag,
     isAbout,
-    isPoetry,
     getLocalizedPath: (targetPath: string) =>
       getLocalizedPath(targetPath, currentLang),
   }
