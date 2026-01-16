@@ -12,7 +12,7 @@ export const themeConfig: ThemeConfig = {
     // use i18n title/subtitle/description from src/i18n/ui.ts instead of static ones above
     i18nTitle: true, // true | false
     // author name
-    author: '杨土豆',
+    author: '洋山芋',
     // site url
     url: 'https://blog.y3-3am.top',
     // base path
