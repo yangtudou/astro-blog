@@ -1,0 +1,24 @@
+---
+import Footer from '../components/Footer.vue';
+import Logo from '../components/Logo.vue';
+// import NavBar from '../components/NavBar.vue';
+---
+
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="author" content="洋山芋" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>y3say</title>
+  </head>
+  <body class="font-sans text-gray-700 dark:text-gray-200 relative">
+    <!-- <NavBar client:load /> -->
+    <!-- <Logo client:load /> -->
+    <slot />
+    <Footer client:load />
+    <div i-ri-arrow-up-line />
+  </body>
+</html>
