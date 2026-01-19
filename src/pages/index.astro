@@ -1,12 +1,12 @@
 ---
-import Footer from '../components/Footer.vue';
-import Logo from '../components/Logo.vue';
-// import NavBar from '../components/NavBar.vue';
+import Footer from '../components/Footer.astro';
+import Navigation from '../components/Navigation.astro';
+import '../styles/global.css';
 ---
 
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="author" content="洋山芋" />
@@ -14,11 +14,9 @@ import Logo from '../components/Logo.vue';
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>y3say</title>
   </head>
-  <body class="font-sans text-gray-700 dark:text-gray-200 relative">
-    <!-- <NavBar client:load /> -->
-    <!-- <Logo client:load /> -->
+  <body class="font-sans text-gray-700 dark:text-gray-200 dark:bg-black">
+    <Navigation />
     <slot />
     <Footer client:load />
-    <div i-ri-arrow-up-line />
   </body>
 </html>
