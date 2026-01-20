@@ -1,0 +1,61 @@
+---
+import { getCollection } from 'astro:content';
+
+// 定义组件接收的Props类型
+interface Props {
+  maxPosts?: number;
+  showDescription?: boolean;
+  showAuthor?: boolean;
+  showTags?: boolean;
+  filterDrafts?: boolean;
+  sortBy?: 'newest' | 'oldest';
+}
+
+// 从Astro.props中解构参数，并设置默认值
+const { 
+  maxPosts,
+  filterDrafts = true,
+  sortBy = 'newest'
+} = Astro.props;
+
+// 获取所有文章
+const allPosts = await getCollection('posts');
+
+// 过滤草稿文章
+const filteredPosts = filterDrafts 
+  ? allPosts.filter(post => !post.data.draft)
+  : allPosts;
+
+// 排序文章
+const sortedPosts = filteredPosts.sort((a, b) => {
+  if (sortBy === 'newest') {
+    return b.data.pubDate.getTime() - a.data.pubDate.getTime();
+  } else {
+    return a.data.pubDate.getTime() - b.data.pubDate.getTime();
+  }
+});
+
+// 限制文章数量
+const displayedPosts = maxPosts ? sortedPosts.slice(0, maxPosts) : sortedPosts;
+---
+
+
+<section>
+  {displayedPosts.length > 0 ? (
+    displayedPosts.map((post) => (
+      <article class="text-lg mt-6rem px-8 py-10">
+        <a href={`/posts/${post.slug}/`} class="flex gap-2 items-center">
+          <h1 class="mb-0">{post.data.title}</h1>
+          <time class="opacity-50">
+          {post.data.pubDate.toLocaleDateString('zh-CN', {
+            month: 'numeric',
+            day: 'numeric',
+          }).replace(/\//g, '-')}
+        </time>
+        </a>
+      </article>
+    ))
+  ) : (
+    <p class="text-lg text-gray-500">404 这里暂时什么都没有。去 <code class="text-black">src\content\posts</code> 下创建一些文章吧 !</p>
+  )}
+</section>
