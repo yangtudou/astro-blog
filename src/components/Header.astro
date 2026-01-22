@@ -1,0 +1,118 @@
+---
+import Logo from '../components/Logo.astro'
+import ToggleTheme from './ToggleTheme.astro'
+
+// 回到顶部函数
+function toTop() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth',
+  })
+}
+---
+
+<header class="z-40">
+  <a href="/" class="w-12 h-12 absolute xl:fixed m-5 select-none outline-none">
+    <Logo />
+  </a>
+
+  <!-- 回到顶部按钮 -->
+  <button
+    id="back-to-top"
+    title="回到顶部"
+    class="fixed right-5 bottom-5 w-10 h-10 hover:op100 rounded-full hover:bg-hex-8883 transition duration-300 z-100 print:hidden op0 pointer-events-none"
+    onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+  >
+    <div class="i-ri-arrow-up-line" />
+  </button>
+
+  <!-- 导航栏 -->
+  <nav class="nav">
+    <div class="spacer" />
+    <div class="right print:op0">
+      
+      <!-- 关于链接 -->
+      <a href="/about" title="关于" class="opacity-60 hover:opacity-100 transition-opacity">
+        <span class="lt-md:hidden">关于</span>
+        <div class="i-ri:information-2-line md:hidden" />
+      </a>
+
+      <!-- GitHub 链接 -->
+      <a 
+        href="https://github.com/antfu" 
+        target="_blank" 
+        title="GitHub" 
+        class="lt-md:hidden opacity-60 hover:opacity-100 transition-opacity"
+      >
+        <div class="i-uil-github-alt" />
+      </a>
+
+      <!-- 主题切换组件 -->
+      <ToggleTheme />
+    </div>
+  </nav>
+</header>
+
+
+<style>
+
+.nav {
+  padding: 2rem;
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto max-content;
+  box-sizing: border-box;
+}
+
+.nav > * {
+  margin: auto;
+}
+
+.nav img {
+  margin-bottom: 0;
+}
+
+.nav a {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition: opacity 0.2s ease;
+  opacity: 0.6;
+  outline: none;
+}
+
+.nav a:hover {
+  opacity: 1;
+  text-decoration-color: inherit;
+}
+
+.nav .right {
+  display: grid;
+  grid-gap: 1.2rem;
+  grid-auto-flow: column;
+}
+
+.nav .right > * {
+  margin: auto;
+}
+</style>
+
+<script>
+// 客户端脚本 - 处理滚动显示和主题切换
+document.addEventListener('DOMContentLoaded', function() {
+  // 回到顶部按钮的显示/隐藏
+  const scrollButton = document.getElementById('back-to-top')
+  if (scrollButton) {
+    window.addEventListener('scroll', function() {
+      const scrollY = window.scrollY || window.pageYOffset
+      if (scrollY > 300) {
+        scrollButton.classList.remove('op0', 'pointer-events-none')
+        scrollButton.classList.add('op30')
+      } else {
+        scrollButton.classList.add('op0', 'pointer-events-none')
+        scrollButton.classList.remove('op30')
+      }
+    })
+  }
+})
+</script>

@@ -1,18 +1,19 @@
-// src/content/config.ts
 import { defineCollection, z } from 'astro:content';
 
-const blogCollection = defineCollection({
-  type: 'content', // 表示这是Markdown/MDX内容
+// post 目录下的 md 文件
+// 顶部信息预设
+// 需要注意必填，这里默认必填  title 、publishDate
+const postCollection = defineCollection({
+  type: 'content',
   schema: z.object({
     title: z.string(),
-    pubDate: z.coerce.date(), // 支持字符串自动转换为日期对象
+    publishDate: z.date(),
     description: z.string().optional(),
-    author: z.string().default('匿名'),
     tags: z.array(z.string()).optional(),
-    draft: z.boolean().optional().default(false), // 草稿标记
   }),
 });
 
+
 export const collections = {
-  'blog': blogCollection, // 'blog' 对应 src/content/blog/ 目录
+  'post': postCollection,
 };

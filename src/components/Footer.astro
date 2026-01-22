@@ -1,17 +1,12 @@
 ---
-// 是否开启版权说明 CC BY-NC-SA 4.0
-const showCopyRight = true
+// src/components/Footer.astro
 ---
 
-<footer class="mt-10 mb-6 m-auto flex text-sm">
-    {
-        showCopyRight && (
-            <a class="@hover:color-dark transition-colors duration-500" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
-                CC BY-NC-SA 4.0
-            </a>
-        )
-    }
-    <p>
-        2026 © y3say
-    </p>
-</footer>
+<div class="mt-10 mb-6 prose m-auto flex justify-center animate-delay-1200!">
+  <span class="text-sm op50">
+    <a target="_blank" href="https://creativecommons.org/licenses/by-nc-sa/4.0/" style="color:inherit" rel="noopener noreferrer">
+      CC BY-NC-SA 4.0
+    </a>
+    2026 © 洋山芋
+  </span>
+</div>

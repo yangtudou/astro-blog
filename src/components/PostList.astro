@@ -1,0 +1,123 @@
+---
+import { getCollection } from 'astro:content'
+import type { CollectionEntry } from 'astro:content'
+
+// 定义 Props 接口
+export interface Props {
+  type?: string
+  posts?: CollectionEntry<'post'>[]
+  extra?: CollectionEntry<'post'>[]
+}
+
+const { type = 'blog', posts: propPosts = [], extra = [] } = Astro.props
+
+// 获取所有文章
+const allPosts = await getCollection('post')
+
+// 过滤和转换文章数据
+const filteredPosts = allPosts
+  .filter(post => {
+    // 过滤掉草稿
+    if (post.data.draft) return false
+    
+    // 过滤类型
+    const postType = post.data.type || 'blog'
+    return postType.split('+').includes(type)
+  })
+  .map(post => ({
+    id: post.id,
+    slug: post.slug,
+    title: post.data.title,
+    date: post.data.publishDate, // 使用 publishDate
+  }))
+
+// 合并文章列表
+const allPostsList = [...propPosts, ...filteredPosts, ...extra]
+  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+// 工具函数
+function formatDate(date: Date | string) {
+  const d = new Date(date)
+  return d.toLocaleDateString('zh-CN', { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  })
+}
+
+function getYear(date: Date | string) {
+  return new Date(date).getFullYear()
+}
+
+function isFuture(date?: Date | string) {
+  return date && new Date(date) > new Date()
+}
+
+function isSameYear(a?: Date | string, b?: Date | string) {
+  return a && b && getYear(a) === getYear(b)
+}
+
+function isSameGroup(a: any, b?: any) {
+  return (isFuture(a.date) === isFuture(b?.date)) && isSameYear(a.date, b?.date)
+}
+
+function getGroupName(post: any) {
+  if (isFuture(post.date)) return '即将推出...'
+  return getYear(post.date)
+}
+---
+
+
+<ul class="list-none p-0 m-0">
+  {allPostsList.length === 0 ? (
+    <div class="py-2 opacity-50">这里还什么都没有</div>
+  ) : (
+    allPostsList.map((post, idx) => {
+      const showGroup = !isSameGroup(post, allPostsList[idx - 1])
+      const href = `/post/${post.slug}`
+      
+      return (
+        <>
+          {showGroup && (
+            <div 
+              class="select-none relative h-20 pointer-events-none"
+              style={`
+                --enter-stage: ${idx - 2};
+                --enter-step: 60ms;
+              `}
+            >
+              <span class="text-8em text-transparent absolute top--2rem font-bold text-stroke-1 text-stroke-hex-aaa opacity-10">
+                {getGroupName(post)}
+              </span>
+            </div>
+          )}
+          
+          <div
+            class="slide-enter"
+            style={`
+              --enter-stage: ${idx};
+              --enter-step: 60ms;
+            `}
+          >
+            <a 
+              href={href}
+              class="item block font-normal mb-6 mt-2 no-underline"
+            >
+              <li class="no-underline flex flex-col md:flex-row gap-2 md:items-center">
+                <div class="title text-lg leading-1.2em flex gap-2 flex-wrap">
+                  <span class="align-middle">{post.title}</span>
+                </div>
+                
+                <div class="flex gap-2 items-center">
+                  <span class="text-sm opacity-50 whitespace-nowrap">
+                    {formatDate(post.date)}
+                  </span>
+                </div>
+              </li>
+            </a>
+          </div>
+        </>
+      )
+    })
+  )}
+</ul>

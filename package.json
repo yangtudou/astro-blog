@@ -1,5 +1,5 @@
 {
-  "name": "astro-vue",
+  "name": "astro-blog-dev",
   "type": "module",
   "version": "0.0.1",
   "scripts": {
@@ -9,12 +9,10 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/vue": "^5.1.4",
-    "astro": "^5.16.11",
-    "remixicon": "^4.8.0",
-    "vue": "^3.5.27"
+    "astro": "^5.16.12"
   },
   "devDependencies": {
+    "@iconify/json": "^2.2.430",
     "@unocss/reset": "^66.6.0",
     "unocss": "^66.6.0"
   }

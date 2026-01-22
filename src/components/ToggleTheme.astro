@@ -1,0 +1,31 @@
+---
+// src/components/ToggleTheme.astro
+---
+
+<a class="select-none cursor-pointer" title="Toggle Color Scheme" id="theme-toggle">
+  <div class="i-ri-sun-line dark:i-ri-moon-line" />
+</a>
+
+<script>
+// 客户端脚本
+document.addEventListener('DOMContentLoaded', function() {
+  const themeToggle = document.getElementById('theme-toggle')
+  
+  if (themeToggle) {
+    themeToggle.addEventListener('click', function() {
+      // 切换暗色/亮色模式
+      const html = document.documentElement
+      const isDark = html.classList.contains('dark')
+      html.classList.toggle('dark', !isDark)
+      
+      // 保存到 localStorage
+      localStorage.setItem('theme', isDark ? 'light' : 'dark')
+    })
+  }
+  
+  // 初始化主题
+  const savedTheme = localStorage.getItem('theme') || 
+    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+  document.documentElement.classList.toggle('dark', savedTheme === 'dark')
+})
+</script>

@@ -1,23 +1,44 @@
 ---
-import Footer from '../components/Footer.astro';
-import Navigation from '../components/Navigation.astro';
-import Head from '../components/Head.astro';
+import Header from '../components/Header.astro'
+import Footer from '../components/Footer.astro'
 
-import '../styles/global.css'; // 全局 css
+import '../styles/global.css';
 
+export interface Props {
+  title?: string
+  description?: string
+}
 
-
+const { title = 'y3say', description } = Astro.props
 ---
 
 <!doctype html>
 <html lang="zh-CN">
-  <!-- Head -->
-  <Head />
-  <body class="font-sans text-gray-700 dark:text-gray-200 dark:bg-black">
-    <Navigation />
-    <main>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="author" content="洋山芋" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description || 'y3say的个人博客'} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>{title}</title>
+    
+    <!-- 主题初始化脚本 -->
+    <script>
+      ;(function () {
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        const setting = localStorage.getItem('theme') || 'auto'
+        if (setting === 'dark' || (prefersDark && setting !== 'light'))
+          document.documentElement.classList.toggle('dark', true)
+      })()
+    </script>
+  </head>
+  
+  <body class="font-sans text-gray-700 dark:text-gray-200 relative min-h-screen bg-white dark:bg-gray-900">
+    <Header />
+    <!-- 页面内容插槽 -->
+     <main class="px-7 py-10 of-x-hidden">
       <slot />
-    </main>
-    <!-- <Footer /> -->
+     </main>
+    <Footer />
   </body>
 </html>
