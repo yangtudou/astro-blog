@@ -1,0 +1,18 @@
+---
+function toTop() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth',
+  })
+}
+---
+
+
+<button
+  id="back-to-top"
+  title="回到顶部"
+  class="fixed right-5 bottom-5 w-10 h-10 hover:op100 rounded-full hover:bg-hex-8883 transition duration-300 z-100 print:hidden op0 pointer-events-none"
+  onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+>
+  <div class="i-ri-arrow-up-line" />
+</button>

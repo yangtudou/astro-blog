@@ -4,12 +4,10 @@ import type { CollectionEntry } from 'astro:content'
 
 // 定义 Props 接口
 export interface Props {
-  type?: string
   posts?: CollectionEntry<'post'>[]
-  extra?: CollectionEntry<'post'>[]
 }
 
-const { type = 'blog', posts: propPosts = [], extra = [] } = Astro.props
+const { posts: propPosts = [] } = Astro.props
 
 // 获取所有文章
 const allPosts = await getCollection('post')
@@ -19,30 +17,32 @@ const filteredPosts = allPosts
   .filter(post => {
     // 过滤掉草稿
     if (post.data.draft) return false
-    
-    // 过滤类型
-    const postType = post.data.type || 'blog'
-    return postType.split('+').includes(type)
+    return true
   })
   .map(post => ({
     id: post.id,
     slug: post.slug,
     title: post.data.title,
-    date: post.data.publishDate, // 使用 publishDate
+    date: post.data.publishDate,
   }))
 
 // 合并文章列表
-const allPostsList = [...propPosts, ...filteredPosts, ...extra]
+const allPostsList = [...propPosts, ...filteredPosts]
   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
 // 工具函数
 function formatDate(date: Date | string) {
   const d = new Date(date)
-  return d.toLocaleDateString('zh-CN', { 
-    year: 'numeric', 
-    month: 'short', 
-    day: 'numeric' 
-  })
+  const currentYear = new Date().getFullYear()
+  const postYear = d.getFullYear()
+  
+  // 如果是当前年份，只显示月份和日期
+  if (postYear === currentYear) {
+    return `${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
+  }
+  
+  // 对于往年文章，显示完整日期
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
 }
 
 function getYear(date: Date | string) {
@@ -86,7 +86,7 @@ function getGroupName(post: any) {
                 --enter-step: 60ms;
               `}
             >
-              <span class="text-8em text-transparent absolute top--2rem font-bold text-stroke-1 text-stroke-hex-aaa opacity-10">
+              <span class="text-8rem absolute text-black:3 dark:text-white:3 top--2rem font-bold z--1">
                 {getGroupName(post)}
               </span>
             </div>
@@ -101,7 +101,7 @@ function getGroupName(post: any) {
           >
             <a 
               href={href}
-              class="item block font-normal mb-6 mt-2 no-underline"
+              class="block font-normal mb-6 mt-2"
             >
               <li class="no-underline flex flex-col md:flex-row gap-2 md:items-center">
                 <div class="title text-lg leading-1.2em flex gap-2 flex-wrap">

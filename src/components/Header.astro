@@ -1,36 +1,16 @@
 ---
 import Logo from '../components/Logo.astro'
 import ToggleTheme from './ToggleTheme.astro'
-
-// 回到顶部函数
-function toTop() {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth',
-  })
-}
 ---
 
-<header class="z-40">
-  <a href="/" class="w-12 h-12 absolute xl:fixed m-5 select-none outline-none">
+<header class="z-1">
+  <a href="/" class="w-12 h-12 absolute fixed m-7 select-none outline-none z-1">
     <Logo />
   </a>
 
-  <!-- 回到顶部按钮 -->
-  <button
-    id="back-to-top"
-    title="回到顶部"
-    class="fixed right-5 bottom-5 w-10 h-10 hover:op100 rounded-full hover:bg-hex-8883 transition duration-300 z-100 print:hidden op0 pointer-events-none"
-    onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
-  >
-    <div class="i-ri-arrow-up-line" />
-  </button>
-
   <!-- 导航栏 -->
-  <nav class="nav">
-    <div class="spacer" />
-    <div class="right print:op0">
-      
+  <nav class="w-full p-2rem fixed grid justify-end">
+    <div class="grid gap-1rem grid-auto-flow-col">
       <!-- 关于链接 -->
       <a href="/about" title="关于" class="opacity-60 hover:opacity-100 transition-opacity">
         <span class="lt-md:hidden">关于</span>
@@ -55,14 +35,6 @@ function toTop() {
 
 
 <style>
-
-.nav {
-  padding: 2rem;
-  width: 100%;
-  display: grid;
-  grid-template-columns: auto max-content;
-  box-sizing: border-box;
-}
 
 .nav > * {
   margin: auto;

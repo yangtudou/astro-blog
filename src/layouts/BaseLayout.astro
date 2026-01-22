@@ -1,6 +1,7 @@
 ---
 import Header from '../components/Header.astro'
 import Footer from '../components/Footer.astro'
+import BackToTop from '../components/BackToTop.astro'
 
 import '../styles/global.css';
 
@@ -33,12 +34,12 @@ const { title = 'y3say', description } = Astro.props
     </script>
   </head>
   
-  <body class="font-sans text-gray-700 dark:text-gray-200 relative min-h-screen bg-white dark:bg-gray-900">
+  <body class="font-sans text-gray-700 dark:text-gray-200 relative min-h-screen bg-white dark:bg-black">
     <Header />
-    <!-- 页面内容插槽 -->
-     <main class="px-7 py-10 of-x-hidden">
-      <slot />
+     <main class="mx-7 pt-25">
+      <slot /> <!-- 页面内容插槽 -->
      </main>
     <Footer />
+    <BackToTop />
   </body>
 </html>
