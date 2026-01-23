@@ -1,18 +1,74 @@
 ---
-function toTop() {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth',
-  })
-}
+/**
+ * BackToTop.astro
+ * 修正层级逻辑：确保在所有背景和 Header 之上
+ */
 ---
-
 
 <button
   id="back-to-top"
   title="回到顶部"
-  class="fixed right-5 bottom-5 w-10 h-10 hover:op100 rounded-full hover:bg-hex-8883 transition duration-300 z-100 print:hidden op0 pointer-events-none"
-  onclick="window.scrollTo({ top: 0, behavior: 'smooth' })"
+  class="fixed right-5 bottom-5 w-10 h-10 flex items-center justify-center rounded-full bg-gray-400/20 hover:bg-gray-400/40 transition-all duration-300 print:hidden opacity-0 pointer-events-none"
+  style="z-index: 999;" 
 >
-  <div class="i-ri-arrow-up-line" />
+  <div class="i-ri-arrow-up-line text-lg"></div>
 </button>
+
+<script>
+  function initBackToTop() {
+    const btn = document.getElementById('back-to-top');
+    
+    // 调试用：如果控制台没打印这个，说明脚本没加载
+    console.log('BackToTop Script Initialized');
+
+    if (!btn) return;
+
+    const handleScroll = () => {
+      // 监控当前滚动高度
+      const scrollY = window.scrollY;
+      
+      if (scrollY > 300) {
+        // 强制移除隐藏类，确保 opacity 生效
+        btn.style.opacity = "1";
+        btn.style.pointerEvents = "auto";
+        btn.classList.remove('opacity-0', 'pointer-events-none');
+      } else {
+        btn.style.opacity = "0";
+        btn.style.pointerEvents = "none";
+        btn.classList.add('opacity-0', 'pointer-events-none');
+      }
+    };
+
+    // 绑定点击事件
+    btn.onclick = (e) => {
+      e.preventDefault();
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    };
+
+    // 监听滚动
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // 初始化位置检查
+    handleScroll();
+  }
+
+  // 关键：针对 Astro 的生命周期，确保每次页面加载（包括切换）都重新运行逻辑
+  document.addEventListener('astro:page-load', initBackToTop);
+  
+  // 备用：防止部分页面没触发 astro:page-load
+  initBackToTop();
+</script>
+
+<style>
+  #back-to-top {
+    /* 增加磨砂感，使其在 Plum 枝干上方更清晰 */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(125, 125, 125, 0.3);
+    /* 确保即使 UnoCSS 没加载，基础样式也在 */
+    cursor: pointer;
+  }
+</style>

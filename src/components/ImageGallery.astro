@@ -1,0 +1,96 @@
+---
+/**
+ * ImageGallery.astro
+ * 最终打磨版：强化 Apple 液态玻璃质感
+ */
+---
+
+<div id="lightbox-overlay" class="lightbox-hidden">
+  <div class="lightbox-wrapper">
+    <img id="lightbox-image" src="" alt="预览" />
+  </div>
+</div>
+
+<script>
+  function initGallery() {
+    const overlay = document.getElementById('lightbox-overlay');
+    const lightboxImg = document.getElementById('lightbox-image');
+    
+    // 使用事件代理，监听全局点击
+    document.addEventListener('click', (e) => {
+      const target = e.target;
+      
+      // 检查点击的是否是正文（.prose）内的图片 [cite: 14]
+      if (target instanceof HTMLImageElement && target.closest('.prose')) {
+        // 排除掉小图标
+        if (target.naturalWidth < 100) return;
+
+        e.preventDefault();
+        if (!overlay || !lightboxImg) return;
+
+        lightboxImg.src = target.src;
+        overlay.classList.remove('lightbox-hidden');
+        overlay.classList.add('lightbox-visible');
+        document.body.style.overflow = 'hidden'; // 锁定滚动
+      }
+    });
+
+    if (overlay) {
+      overlay.onclick = () => {
+        overlay.classList.remove('lightbox-visible');
+        overlay.classList.add('lightbox-hidden');
+        document.body.style.overflow = '';
+      };
+    }
+  }
+
+  document.addEventListener('astro:page-load', initGallery);
+  initGallery();
+</script>
+
+<style is:global>
+  #lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+    /* 极致平滑的 Apple 曲线 */
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    
+    /* Apple 液态玻璃核心：超高饱和度与模糊 */
+    backdrop-filter: blur(30px) saturate(210%);
+    -webkit-backdrop-filter: blur(30px) saturate(210%);
+    background: rgba(255, 255, 255, 0.7);
+    
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  html.dark #lightbox-overlay {
+    background: rgba(10, 10, 10, 0.75);
+    backdrop-filter: blur(30px) saturate(160%);
+  }
+
+  #lightbox-overlay.lightbox-visible {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  #lightbox-image {
+    max-width: 92vw;
+    max-height: 88vh;
+    border-radius: 20px;
+    /* 更柔和的投影 */
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.25);
+    /* 弹出时的缩放效果 */
+    transform: scale(0.92);
+    transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  #lightbox-overlay.lightbox-visible #lightbox-image {
+    transform: scale(1);
+  }
+</style>

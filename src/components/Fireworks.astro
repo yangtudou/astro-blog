@@ -1,0 +1,107 @@
+---
+// src/components/Fireworks.astro
+---
+
+<div class="fireworks-container fixed inset-0 pointer-events-none z--1">
+  <canvas id="fireworks-canvas"></canvas>
+</div>
+
+<script>
+  function initFireworks() {
+    const canvas = document.getElementById('fireworks-canvas')
+    if (!canvas || !(canvas instanceof HTMLCanvasElement)) return
+    
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const dpr = window.devicePixelRatio || 1
+    let width = window.innerWidth
+    let height = window.innerHeight
+
+    const particles = []
+    const particleCount = 20 // 数量不宜过多，保持优雅
+    
+    // 适配高清屏
+    const setupCanvas = () => {
+      width = window.innerWidth
+      height = window.innerHeight
+      canvas.style.width = `${width}px`
+      canvas.style.height = `${height}px`
+      canvas.width = width * dpr
+      canvas.height = height * dpr
+      ctx.scale(dpr, dpr)
+    }
+
+    class Particle {
+      constructor() {
+        this.reset()
+      }
+
+      reset() {
+        this.x = Math.random() * width
+        this.y = Math.random() * height
+        this.vx = (Math.random() - 0.5) * 0.5 // 极其缓慢的移动
+        this.vy = (Math.random() - 0.5) * 0.5
+        this.radius = Math.random() * 1.5
+        this.alpha = Math.random() * 0.3
+        this.growth = Math.random() * 0.005 + 0.002
+      }
+
+      update() {
+        this.x += this.vx
+        this.y += this.vy
+        this.alpha += this.growth
+
+        // 呼吸效果：透明度在 0 到 0.4 之间波动
+        if (this.alpha > 0.4 || this.alpha < 0) {
+          this.growth *= -1
+        }
+
+        // 边界检测
+        if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+          this.reset()
+        }
+      }
+
+      draw() {
+        const isDark = document.documentElement.classList.contains('dark')
+        // 根据主题调整粒子颜色
+        ctx.fillStyle = isDark ? `rgba(255, 255, 255, ${this.alpha})` : `rgba(0, 0, 0, ${this.alpha})`
+        ctx.beginPath()
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
+        ctx.fill()
+      }
+    }
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle())
+    }
+
+    const animate = () => {
+      ctx.clearRect(0, 0, width, height)
+      particles.forEach(p => {
+        p.update()
+        p.draw()
+      })
+      requestAnimationFrame(animate)
+    }
+
+    setupCanvas()
+    animate()
+
+    window.addEventListener('resize', setupCanvas)
+  }
+
+  // 初始化
+  initFireworks()
+  document.addEventListener('astro:after-swap', initFireworks)
+</script>
+
+<style>
+  .fireworks-container {
+    /* 配合之前的 Plum 组件，可以产生层叠美感 */
+    opacity: 0.6;
+    /* 增加一个极其微弱的模糊，增加朦胧感 */
+    filter: blur(1px);
+  }
+</style>

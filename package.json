@@ -9,7 +9,9 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.16.12"
+    "astro": "^5.16.12",
+    "pixi.js": "^8.15.0",
+    "simplex-noise": "^4.0.3"
   },
   "devDependencies": {
     "@iconify/json": "^2.2.430",

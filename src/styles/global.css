@@ -1,0 +1,25 @@
+/* src/styles/global.css */
+
+/* 强制给关键元素增加颜色过渡，且必须有一样的 duration */
+:root {
+  --transition-speed: 0.5s;
+}
+
+html, body, nav, main, header, footer {
+  transition: background-color var(--transition-speed) ease, 
+              color var(--transition-speed) ease,
+              border-color var(--transition-speed) ease !important;
+}
+
+/* 当切换模式时，禁止瞬间的闪烁 */
+*, *::before, *::after {
+  /* 这里的 transition 可以让所有细小的 UI 元素（如下划线、边框）同步变色 */
+  transition: background-color var(--transition-speed) ease, 
+              border-color var(--transition-speed) ease, 
+              color var(--transition-speed) ease;
+}
+
+/* 特殊处理：如果是 UnoCSS 生成的图标，我们也给它加点延迟 */
+[class^="i-"] {
+  transition: transform 0.3s ease;
+}

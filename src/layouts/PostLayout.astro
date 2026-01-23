@@ -1,0 +1,177 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import ImageGallery from '../components/ImageGallery.astro';
+import { formatDate } from '../utils';
+
+// 接收从 [...slug].astro 传来的 frontmatter
+const { frontmatter } = Astro.props;
+
+// 移除可能导致编译报错的 throw 逻辑，改用简单的条件判断
+const title = frontmatter?.title || '无标题';
+const publishDate = frontmatter?.publishDate;
+const description = frontmatter?.description;
+---
+
+<BaseLayout title={title} description={description}>
+  <header class="mb-10 slide-enter" style="--enter-stage: 0">
+    <h1 class="text-3xl md:text-4xl font-bold mb-4 text-black dark:text-white leading-tight">
+      {title}
+    </h1>
+    
+    <div class="flex items-center gap-3 text-sm opacity-40 tabular-nums">
+      {publishDate && (
+        <time datetime={new Date(publishDate).toISOString()}>
+          {formatDate(publishDate)}
+        </time>
+      )}
+      {description && (
+        <>
+          <span class="opacity-30">·</span>
+          <span>{description}</span>
+        </>
+      )}
+    </div>
+  </header>
+
+  <article 
+    class="prose prose-truegray dark:prose-invert max-w-none slide-enter" 
+    style="--enter-stage: 1"
+  >
+    <slot />
+  </article>
+
+  <ImageGallery />
+
+  <footer class="mt-20 pb-10 slide-enter" style="--enter-stage: 2">
+    <a 
+      href="/" 
+      class="text-sm opacity-40 hover:opacity-100 transition-opacity flex items-center gap-2 group"
+    >
+      <span class="transition-transform group-hover:-translate-x-1">←</span>
+      <span>cd ..</span>
+    </a>
+  </footer>
+</BaseLayout>
+
+<script>
+  // 使用最基础的 JS 语法，确保不会报 "Expected ';'" 错误
+  function addCopyButtons() {
+    var preTags = document.querySelectorAll('pre');
+    
+    preTags.forEach(function(pre) {
+      // 如果已经有按钮了就跳过
+      if (pre.querySelector('.copy-code-button')) return;
+
+      // 创建按钮
+      var btn = document.createElement('button');
+      btn.className = 'copy-code-button';
+      btn.innerHTML = '<div class="i-ri-file-copy-line"></div>';
+      
+      pre.appendChild(btn);
+
+      btn.onclick = function() {
+        var codeElement = pre.querySelector('code');
+        var textToCopy = codeElement ? codeElement.innerText : '';
+        
+        navigator.clipboard.writeText(textToCopy).then(function() {
+          // 成功反馈
+          btn.innerHTML = '<div class="i-ri-check-line text-green-500"></div>';
+          setTimeout(function() {
+            btn.innerHTML = '<div class="i-ri-file-copy-line"></div>';
+          }, 2000);
+        });
+      };
+    });
+  }
+
+  // 监听 Astro 页面加载
+  document.addEventListener('astro:page-load', addCopyButtons);
+  // 备用初始化
+  addCopyButtons();
+</script>
+
+<style is:global>
+  /* --- 图片统一规格 --- */
+  .prose img {
+    width: 100% !important;
+    max-height: 480px !important;
+    object-fit: cover !important;
+    border-radius: 20px !important;
+    margin: 3rem auto !important;
+    display: block !important;
+    cursor: zoom-in !important;
+    border: 1px solid rgba(125, 125, 125, 0.1) !important;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  /* --- 代码块 Mac 风格窗口 --- */
+  .prose pre {
+    position: relative;
+    padding-top: 3rem !important;
+    background-color: rgba(246, 248, 250, 0.8) !important;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(125, 125, 125, 0.2) !important;
+    border-radius: 12px !important;
+    margin: 2rem 0 !important;
+  }
+
+  /* Mac 三色圆点 */
+  .prose pre::before {
+    content: "";
+    position: absolute;
+    top: 1.2rem;
+    left: 1.2rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #ff5f56;
+    box-shadow: 22px 0 0 #ffbd2e, 44px 0 0 #27c93f;
+  }
+
+  html.dark .prose pre {
+    background-color: rgba(18, 18, 18, 0.8) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* --- 复制按钮样式 --- */
+  .copy-code-button {
+    position: absolute;
+    top: 0.8rem;
+    right: 0.8rem;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: rgba(125, 125, 125, 0.1);
+    border: 1px solid rgba(125, 125, 125, 0.1);
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s ease;
+    z-index: 10;
+    color: inherit;
+  }
+
+  .prose pre:hover .copy-code-button {
+    opacity: 1;
+  }
+
+  .copy-code-button:hover {
+    background: rgba(125, 125, 125, 0.2);
+  }
+
+  /* --- 内联代码优化 --- */
+  .prose :not(pre) > code {
+    background-color: rgba(125, 125, 125, 0.1) !important;
+    color: #c7254e !important;
+    padding: 0.2rem 0.4rem !important;
+    border-radius: 6px !important;
+  }
+
+  html.dark .prose :not(pre) > code {
+    color: #fb7185 !important;
+  }
+
+  .prose code::before, .prose code::after { content: "" !important; }
+</style>

@@ -1,0 +1,141 @@
+---
+interface Props {
+  dotColor?: string;
+}
+const { dotColor = '#CCCCCC' } = Astro.props;
+---
+
+<div id="pixi-bg" class="z--1 fixed inset-0 pointer-events-none"></div>
+
+<script>
+  import { Application, Graphics, Particle, ParticleContainer, Color } from 'pixi.js'
+  import { createNoise3D } from 'simplex-noise'
+
+  let w = window.innerWidth
+  let h = window.innerHeight
+
+  const SCALE = 200
+  const LENGTH = 5
+  const SPACING = 15
+  const noise3d = createNoise3D()
+
+  // 定义两种模式的颜色
+  const COLOR_LIGHT = new Color(0x999999) 
+  const COLOR_DARK = new Color(0xFFFFFF)
+
+  const existingPoints = new Set<string>()
+  const points: { x: number, y: number, opacity: number, particle: Particle }[] = []
+
+  function getForceOnPoint(x: number, y: number, z: number) {
+    return (noise3d(x / SCALE, y / SCALE, z) - 0.5) * 2 * Math.PI
+  }
+
+  // 使用纯白纹理，方便后续通过 tint 修改颜色
+  function createDotTexture(app: any) {
+    const g = new Graphics().circle(0, 0, 1).fill(0xFFFFFF)
+    return app.renderer.generateTexture(g)
+  }
+
+  function addPoints({ dotTexture, particleContainer }: any) {
+    const isDark = document.documentElement.classList.contains('dark')
+    const initialColor = isDark ? COLOR_DARK.toNumber() : COLOR_LIGHT.toNumber()
+
+    for (let x = -SPACING / 2; x < w + SPACING; x += SPACING) {
+      for (let y = -SPACING / 2; y < h + SPACING; y += SPACING) {
+        const id = `${x}-${y}`
+        if (existingPoints.has(id)) continue
+        existingPoints.add(id)
+
+        const particle = new Particle(dotTexture)
+        particle.anchorX = 0.5
+        particle.anchorY = 0.5
+        particle.tint = initialColor // 设置初始颜色
+        particleContainer.addParticle(particle)
+
+        const opacity = Math.random() * 0.5 + 0.5
+        points.push({ x, y, opacity, particle })
+      }
+    }
+  }
+
+  async function init() {
+    const container = document.getElementById('pixi-bg')
+    if (!container) return
+
+    const app = new Application()
+    await app.init({
+      backgroundAlpha: 0,
+      antialias: true,
+      resolution: window.devicePixelRatio || 1,
+      eventMode: 'none',
+      autoDensity: true,
+    })
+
+    container.appendChild(app.canvas)
+    app.renderer.resize(window.innerWidth, window.innerHeight)
+
+    // 关键：必须开启 tint: true 才能通过脚本修改颜色
+    const particleContainer = new ParticleContainer({ 
+      dynamicProperties: { position: true, alpha: true, tint: true } 
+    })
+    app.stage.addChild(particleContainer)
+
+    const dotTexture = createDotTexture(app)
+    addPoints({ dotTexture, particleContainer })
+
+    // 颜色插值逻辑
+    let currentTint = new Color(document.documentElement.classList.contains('dark') ? COLOR_DARK : COLOR_LIGHT)
+    let targetTint = new Color(currentTint)
+
+    // 监听 html 标签的 class 变化
+    const observer = new MutationObserver(() => {
+      const isDark = document.documentElement.classList.contains('dark')
+      targetTint = isDark ? COLOR_DARK : COLOR_LIGHT
+    })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
+
+    app.ticker.add(() => {
+      const t = Date.now() / 10000
+
+      // 每一帧平滑过渡颜色
+      if (currentTint.toNumber() !== targetTint.toNumber()) {
+        const r = currentTint.red + (targetTint.red - currentTint.red) * 0.05
+        const g = currentTint.green + (targetTint.green - currentTint.green) * 0.05
+        const b = currentTint.blue + (targetTint.blue - currentTint.blue) * 0.05
+        currentTint.set({ r, g, b })
+      }
+
+      for (const p of points) {
+        const { x, y, opacity, particle } = p
+        const rad = getForceOnPoint(x, y, t)
+        const len = (noise3d(x / SCALE, y / SCALE, t * 2) + 0.5) * LENGTH
+        
+        particle.x = x + Math.cos(rad) * len
+        particle.y = y + Math.sin(rad) * len
+        particle.alpha = (Math.abs(Math.cos(rad)) * 0.8 + 0.2) * opacity
+        particle.tint = currentTint.toNumber() // 应用当前颜色
+      }
+    })
+
+    window.addEventListener('resize', () => {
+      w = window.innerWidth
+      h = window.innerHeight
+      app.renderer.resize(w, h)
+      addPoints({ dotTexture, particleContainer })
+    })
+  }
+
+  init()
+</script>
+
+<style>
+  #pixi-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    opacity: 0.5;
+  }
+</style>

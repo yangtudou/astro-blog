@@ -1,32 +1,19 @@
 ---
-// 1. 导入布局和内容集合方法
-import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostLayout from '../../layouts/PostLayout.astro';
 import { getCollection } from 'astro:content';
 
-// 2. 生成静态路径
 export async function getStaticPaths() {
-  const allPosts = await getCollection('post'); // 确保这里是 'post'
-  
-  return allPosts.map((post) => {
-    return {
-      params: { slug: post.slug }, // 为每篇文章生成一个 slug 参数
-      props: { post }, // 将整篇文章数据作为 props 传递
-    };
-  });
+  const allPosts = await getCollection('post');
+  return allPosts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
 }
 
-// 3. 接收从 getStaticPaths 传递过来的 props
 const { post } = Astro.props;
-// 从文章数据中解构出需要的内容
 const { Content } = await post.render();
 ---
 
-<!-- 4. 使用布局并渲染文章 -->
-<BaseLayout title={post.data.title}>
-  <article class="prose prose-cyan dark:prose-invert max-w-none mx-auto">
-    <h1>{post.data.title}</h1>
-    <p>{post.data.publishDate.toDateString()}</p>
-    <Content /> <!-- 这里渲染 Markdown 正文 -->
-  </article>
-</BaseLayout>
-
+<PostLayout frontmatter={post.data}>
+  <Content />
+</PostLayout>
