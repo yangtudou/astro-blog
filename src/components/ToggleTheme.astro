@@ -3,42 +3,111 @@
 ---
 
 <button 
-  id="theme-toggle" 
+  id="theme-toggle"
   class="select-none cursor-pointer opacity-60 hover:opacity-100 transition-all duration-300 border-none bg-transparent p-0 flex items-center justify-center" 
-  title="切换主题"
+  title="Toggle Color Scheme"
 >
-  <div class="i-ri-sun-line dark:hidden text-xl" />
-  <div class="hidden dark:block i-ri-moon-line text-xl" />
+  <div class="i-ri-sun-line dark:hidden text-xl"></div>
+  <div class="hidden dark:block i-ri-moon-line text-xl"></div>
 </button>
 
-<script>
-  // 使用私有作用域，避免全局污染
+<script is:inline>
   function initThemeToggle() {
     const btn = document.getElementById('theme-toggle');
-    if (!btn) return;
+    if (!btn || btn.dataset.connected) return;
 
-    btn.addEventListener('click', () => {
+    // 对应 Antfu 源码中的 toggleDark 函数
+    const toggleDark = async (event) => {
+      const isAppearanceTransition = document.startViewTransition
+        && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (!isAppearanceTransition) {
+        performToggle();
+        return;
+      }
+
+      const x = event.clientX;
+      const y = event.clientY;
+      const endRadius = Math.hypot(
+        Math.max(x, innerWidth - x),
+        Math.max(y, innerHeight - y)
+      );
+
+      // 1. 开启视图过渡
+      const transition = document.startViewTransition(async () => {
+        performToggle();
+        // 对应 Vue 的 await nextTick()，确保 class 已更新到 DOM
+        await new Promise(resolve => setTimeout(resolve, 0));
+      });
+
+      // 2. 动画处理
+      transition.ready.then(() => {
+        const isDarkNow = document.documentElement.classList.contains('dark');
+        const clipPath = [
+          `circle(0px at ${x}px ${y}px)`,
+          `circle(${endRadius}px at ${x}px ${y}px)`,
+        ];
+
+        document.documentElement.animate(
+          {
+            // 如果切换后是深色，则从 0 扩散到全屏；如果是浅色，则反向收缩
+            clipPath: isDarkNow ? clipPath : [...clipPath].reverse(),
+          },
+          {
+            duration: 400,
+            easing: 'ease-out', // 对应 Antfu 的 ease-out
+            fill: 'forwards',   // 关键：防止动画结束时状态回弹
+            pseudoElement: isDarkNow
+              ? '::view-transition-new(root)'
+              : '::view-transition-old(root)',
+          }
+        );
+      });
+    };
+
+    function performToggle() {
       const html = document.documentElement;
-      const isDark = html.classList.contains('dark');
-      
-      // 1. 切换类名
-      html.classList.toggle('dark', !isDark);
-      
-      // 2. 记录状态
-      const newTheme = !isDark ? 'dark' : 'light';
-      localStorage.setItem('theme', newTheme);
-      
-      // 3. (可选) 如果你想要更高级的视图过渡效果（如圆形扩散），可以在这里写逻辑
-    });
+      html.classList.toggle('dark');
+      localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+    }
+
+    btn.onclick = (e) => toggleDark(e);
+    btn.dataset.connected = "true";
   }
 
-  // 兼容 Astro 生命周期
   initThemeToggle();
   document.addEventListener('astro:after-swap', initThemeToggle);
 </script>
 
+<style is:global>
+  /* 必须有这些样式，否则 Safari 会在第二次切换时由于层级混乱而卡住 */
+  
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+    mix-blend-mode: normal !important;
+  }
+
+  /* 解决第二次切换卡住的核心层级修复 */
+  /* 当处于暗色模式时（正在进入暗色或离开暗色），确保“新层”在上方执行扩散 */
+  .dark::view-transition-new(root) {
+    z-index: 9999;
+  }
+  .dark::view-transition-old(root) {
+    z-index: 1;
+  }
+
+  /* 当处于亮色模式时，确保“旧层”在上方执行收缩 */
+  :root:not(.dark)::view-transition-new(root) {
+    z-index: 1;
+  }
+  :root:not(.dark)::view-transition-old(root) {
+    z-index: 9999;
+  }
+</style>
+
 <style>
-  /* 增加一个小巧的旋转动画，让图标切换更有趣 */
+  /* 保留你原始的按钮交互 */
   #theme-toggle:active {
     transform: scale(0.9) rotate(15deg);
   }

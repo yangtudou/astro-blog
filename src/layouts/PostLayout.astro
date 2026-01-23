@@ -107,7 +107,7 @@ const description = frontmatter?.description;
   /* --- 代码块 Mac 风格窗口 --- */
   .prose pre {
     position: relative;
-    padding-top: 3rem !important;
+    padding-top: 1rem !important;
     background-color: rgba(246, 248, 250, 0.8) !important;
     backdrop-filter: blur(12px);
     border: 1px solid rgba(125, 125, 125, 0.2) !important;
@@ -115,18 +115,7 @@ const description = frontmatter?.description;
     margin: 2rem 0 !important;
   }
 
-  /* Mac 三色圆点 */
-  .prose pre::before {
-    content: "";
-    position: absolute;
-    top: 1.2rem;
-    left: 1.2rem;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: #ff5f56;
-    box-shadow: 22px 0 0 #ffbd2e, 44px 0 0 #27c93f;
-  }
+ 
 
   html.dark .prose pre {
     background-color: rgba(18, 18, 18, 0.8) !important;

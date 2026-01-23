@@ -3,7 +3,10 @@ import presetIcons from '@unocss/preset-icons'
 
 export default defineConfig({
   presets: [
-    presetUno(),
+    presetUno({
+      // 在这里显式指定暗色模式为 class 触发
+      dark: 'class',
+    }),
     presetTypography(),
     presetAttributify(),
     presetIcons({
