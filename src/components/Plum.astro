@@ -10,18 +10,20 @@
 </div>
 
 <script>
-  // 1. 基础物理常量定义 [cite: 1]
   const r180 = Math.PI
   const r90 = Math.PI / 2
   const r15 = Math.PI / 12
-  const COLOR = '#88888825' // 极低透明度的灰色 [cite: 1]
-  const MIN_BRANCH = 30
+  const COLOR = '#88888825'
+  
+  // 🔑 移动端专用配置
+  const isMobile = window.innerWidth < 768
+  const MIN_BRANCH = isMobile ? 5 : 30  // 移动端只有 5 层
+  const MAX_BRANCH = isMobile ? 20 : 100  // 移动端最多 20 个分支
 
-  // 2. 状态变量
   let steps = []
   let prevSteps = []
   let lastTime = performance.now()
-  const interval = 1000 / 40 // 限制帧率约 40fps [cite: 9]
+  const interval = isMobile ? 1000 / 20 : 1000 / 40  // 移动端降到 20fps
 
   function init() {
     const canvas = document.getElementById('plum-canvas')
@@ -30,7 +32,6 @@
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    // 3. 高清屏适配 (DPI 处理) [cite: 3, 5]
     const dpr = window.devicePixelRatio || 1
     canvas.style.width = `${window.innerWidth}px`
     canvas.style.height = `${window.innerHeight}px`
@@ -40,20 +41,24 @@
 
     const random = Math.random
 
-    // 4. 坐标转换函数 [cite: 5]
     const polar2cart = (x = 0, y = 0, r = 0, theta = 0) => [
       x + r * Math.cos(theta),
       y + r * Math.sin(theta)
     ]
 
-    // 5. 核心递归生长函数 [cite: 6]
+    // 🔑 分支计数器（全局）
+    let totalBranches = 0
+
     const step = (x, y, rad, counter = { value: 0 }) => {
-      const length = random() * 6 // 枝干长度 [cite: 6]
+      // 🔑 达到最大分支数立即停止
+      if (totalBranches >= MAX_BRANCH) return
+      
+      const length = random() * 6
       counter.value += 1
+      totalBranches += 1
 
       const [nx, ny] = polar2cart(x, y, length, rad)
 
-      // 绘制线条 [cite: 6]
       ctx.beginPath()
       ctx.moveTo(x, y)
       ctx.lineTo(nx, ny)
@@ -62,21 +67,21 @@
       const rad1 = rad + random() * r15
       const rad2 = rad - random() * r15
 
-      // 边界检测：超出屏幕一定范围停止绘制 [cite: 7, 8]
       if (nx < -100 || nx > window.innerWidth + 100 || ny < -100 || ny > window.innerHeight + 100)
         return
 
-      // 根据生长深度决定分支概率 [cite: 8, 9]
-      const rate = counter.value <= MIN_BRANCH ? 0.8 : 0.5
+      // 🔑 移动端大幅降低分支概率
+      const rate = counter.value <= MIN_BRANCH 
+        ? (isMobile ? 0.3 : 0.8)  // 移动端 0.3，桌面端 0.8
+        : (isMobile ? 0.1 : 0.5)  // 移动端 0.1，桌面端 0.5
 
       if (random() < rate) steps.push(() => step(nx, ny, rad1, counter))
       if (random() < rate) steps.push(() => step(nx, ny, rad2, counter))
     }
 
-    // 6. 动画帧循环 [cite: 9, 10]
     const frame = () => {
       if (performance.now() - lastTime < interval) {
-        requestAnimationFrame(frame)
+        window.plumAnimationId = requestAnimationFrame(frame)
         return
       }
 
@@ -84,19 +89,30 @@
       prevSteps = steps
       steps = []
 
-      if (!prevSteps.length) return
+      if (!prevSteps.length) {
+        window.plumAnimationId = null
+        return
+      }
 
       prevSteps.forEach((i) => {
-        // 50% 概率将步骤推迟到下一帧，营造有机生长感 [cite: 10]
-        if (random() < 0.5) steps.push(i)
-        else i()
+        // 🔑 移动端快速完成，不延迟
+        if (isMobile || random() < 0.3) {
+          i()
+        } else {
+          steps.push(i)
+        }
       })
 
-      requestAnimationFrame(frame)
+      window.plumAnimationId = requestAnimationFrame(frame)
     }
 
-    // 7. 启动函数 [cite: 11, 12]
     const start = () => {
+      if (window.plumAnimationId) {
+        cancelAnimationFrame(window.plumAnimationId)
+        window.plumAnimationId = null
+      }
+
+      totalBranches = 0  // 🔑 重置计数器
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.lineWidth = 1
       ctx.strokeStyle = COLOR
@@ -104,34 +120,49 @@
       
       const randomMiddle = () => random() * 0.6 + 0.2
       
-      // 从屏幕四个边缘随机位置向中心生长 [cite: 12]
-      steps = [
-        () => step(randomMiddle() * window.innerWidth, -5, r90),
-        () => step(randomMiddle() * window.innerWidth, window.innerHeight + 5, -r90),
-        () => step(-5, randomMiddle() * window.innerHeight, 0),
-        () => step(window.innerWidth + 5, randomMiddle() * window.innerHeight, r180),
-      ]
+      // 🔑 移动端只从顶部生长一个分支
+      if (isMobile) {
+        steps = [
+          () => step(randomMiddle() * window.innerWidth, -5, r90),
+        ]
+      } else {
+        steps = [
+          () => step(randomMiddle() * window.innerWidth, -5, r90),
+          () => step(randomMiddle() * window.innerWidth, window.innerHeight + 5, -r90),
+          () => step(-5, randomMiddle() * window.innerHeight, 0),
+          () => step(window.innerWidth + 5, randomMiddle() * window.innerHeight, r180),
+        ]
+      }
       
-      // 移动端减少分支数量 [cite: 12]
-      if (window.innerWidth < 500) steps = steps.slice(0, 2)
-      
-      requestAnimationFrame(frame)
+      window.plumAnimationId = requestAnimationFrame(frame)
     }
 
     start()
   }
 
-  // 立即执行
+  window.initPlum = init
   init()
 
-  // 窗口调整防抖处理
-  let resizeTimer
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimer)
-    resizeTimer = setTimeout(() => {
-      init()
-    }, 300)
-  })
+  // 🔑 移动端完全禁用 resize 重绘
+  if (!isMobile) {
+    let resizeTimer
+    let lastWidth = window.innerWidth
+    let lastHeight = window.innerHeight
+    
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(() => {
+        const currentWidth = window.innerWidth
+        const currentHeight = window.innerHeight
+        
+        if (Math.abs(currentWidth - lastWidth) > 50 || Math.abs(currentHeight - lastHeight) > 50) {
+          lastWidth = currentWidth
+          lastHeight = currentHeight
+          init()
+        }
+      }, 500)
+    })
+  }
 </script>
 
 <style>

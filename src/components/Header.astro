@@ -4,23 +4,25 @@ import ToggleTheme from './ToggleTheme.astro'
 ---
 
 <header class="z-50">
+  <!-- Logo 改为非 fixed -->
   <a 
     href="/" 
-    class="fixed top-0 left-0 m-7 select-none outline-none z-60 hover:opacity-100 opacity-60 transition-opacity"
+    class="absolute top-0 left-0 m-7 select-none outline-none z-60 hover:opacity-100 opacity-60 transition-opacity"
     aria-label="回到首页"
   >
     <Logo />
   </a>
 
-  <nav class="fixed top-0 left-0 right-0 z-50 transition-all duration-500 pointer-events-none" id="main-nav">
+  <!-- 导航栏保持非 fixed -->
+  <nav class="absolute top-0 left-0 right-0 z-50 transition-all duration-500 pointer-events-none" id="main-nav">
     <div class="absolute inset-0 bg-mask opacity-0 transition-opacity duration-500 -z-1"></div>
     
     <div class="flex items-center justify-end gap-5 p-8 pointer-events-auto">
-      <a href="/about" title="关于" class="nav-link">
-        <span class="lt-md:hidden text-sm">关于</span>
+      <a href="/about" title="关于" class="opacity-60 md:hover:opacity-100 md:transition-opacity md:duration-200 text-sm font-medium no-underline select-none text-gray-700 dark:text-gray-200">
+        <span class="lt-md:hidden">关于</span>
         <div class="i-ri:information-2-line md:hidden text-xl" />
       </a>
-      <a href="https://github.com/antfu" target="_blank" rel="noopener noreferrer" title="GitHub" class="nav-link">
+      <a href="https://github.com/antfu" target="_blank" rel="noopener noreferrer" title="GitHub" class="opacity-60 md:hover:opacity-100 md:transition-opacity md:duration-200 no-underline select-none text-gray-700 dark:text-gray-200">
         <div class="i-uil-github-alt text-xl" />
       </a>
       <ToggleTheme />
@@ -29,14 +31,9 @@ import ToggleTheme from './ToggleTheme.astro'
 </header>
 
 <style>
-  .nav-link {
-    --at-apply: "opacity-60 hover:opacity-100 transition-opacity text-sm font-medium decoration-none select-none";
-  }
-
   .bg-mask {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    /* 关键：让模糊和背景颜色在垂直方向上线性淡出 */
     mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, black 0%, black 50%, transparent 100%);
     
@@ -55,7 +52,6 @@ import ToggleTheme from './ToggleTheme.astro'
     );
   }
 
-  /* 滚动时由 JS 激活显现 */
   nav.scrolled .bg-mask {
     opacity: 1;
   }

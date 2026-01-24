@@ -4,11 +4,11 @@
 
 <button 
   id="theme-toggle"
-  class="select-none cursor-pointer opacity-60 hover:opacity-100 transition-all duration-300 border-none bg-transparent p-0 flex items-center justify-center" 
-  title="Toggle Color Scheme"
+  class="border-none bg-transparent p-0 cursor-pointer select-none opacity-60 md:hover:opacity-100 md:transition-opacity md:duration-200 active:scale-90 transition-transform"
+  title="切换主题"
 >
-  <div class="i-ri-sun-line dark:hidden text-xl"></div>
-  <div class="hidden dark:block i-ri-moon-line text-xl"></div>
+  <div class="i-ri-sun-line dark:hidden text-xl text-gray-700 dark:text-gray-200"></div>
+  <div class="hidden dark:block i-ri-moon-line text-xl text-gray-700 dark:text-gray-200"></div>
 </button>
 
 <script is:inline>
@@ -16,7 +16,6 @@
     const btn = document.getElementById('theme-toggle');
     if (!btn || btn.dataset.connected) return;
 
-    // 对应 Antfu 源码中的 toggleDark 函数
     const toggleDark = async (event) => {
       const isAppearanceTransition = document.startViewTransition
         && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -26,21 +25,21 @@
         return;
       }
 
-      const x = event.clientX;
-      const y = event.clientY;
+      // 🔑 关键修复：获取按钮的中心位置作为动画圆心
+      const rect = btn.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      
       const endRadius = Math.hypot(
         Math.max(x, innerWidth - x),
         Math.max(y, innerHeight - y)
       );
 
-      // 1. 开启视图过渡
       const transition = document.startViewTransition(async () => {
         performToggle();
-        // 对应 Vue 的 await nextTick()，确保 class 已更新到 DOM
         await new Promise(resolve => setTimeout(resolve, 0));
       });
 
-      // 2. 动画处理
       transition.ready.then(() => {
         const isDarkNow = document.documentElement.classList.contains('dark');
         const clipPath = [
@@ -48,15 +47,15 @@
           `circle(${endRadius}px at ${x}px ${y}px)`,
         ];
 
+        // 🔑 关键修复：两个方向使用相同的时长和缓动函数
         document.documentElement.animate(
           {
-            // 如果切换后是深色，则从 0 扩散到全屏；如果是浅色，则反向收缩
             clipPath: isDarkNow ? clipPath : [...clipPath].reverse(),
           },
           {
-            duration: 400,
-            easing: 'ease-out', // 对应 Antfu 的 ease-out
-            fill: 'forwards',   // 关键：防止动画结束时状态回弹
+            duration: 500,  // 统一为 500ms
+            easing: 'cubic-bezier(0.4, 0, 0.2, 1)',  // 统一缓动函数
+            fill: 'forwards',
             pseudoElement: isDarkNow
               ? '::view-transition-new(root)'
               : '::view-transition-old(root)',
@@ -80,16 +79,12 @@
 </script>
 
 <style is:global>
-  /* 必须有这些样式，否则 Safari 会在第二次切换时由于层级混乱而卡住 */
-  
   ::view-transition-old(root),
   ::view-transition-new(root) {
     animation: none !important;
     mix-blend-mode: normal !important;
   }
 
-  /* 解决第二次切换卡住的核心层级修复 */
-  /* 当处于暗色模式时（正在进入暗色或离开暗色），确保“新层”在上方执行扩散 */
   .dark::view-transition-new(root) {
     z-index: 9999;
   }
@@ -97,18 +92,10 @@
     z-index: 1;
   }
 
-  /* 当处于亮色模式时，确保“旧层”在上方执行收缩 */
   :root:not(.dark)::view-transition-new(root) {
     z-index: 1;
   }
   :root:not(.dark)::view-transition-old(root) {
     z-index: 9999;
-  }
-</style>
-
-<style>
-  /* 保留你原始的按钮交互 */
-  #theme-toggle:active {
-    transform: scale(0.9) rotate(15deg);
   }
 </style>

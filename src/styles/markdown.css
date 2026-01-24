@@ -1,0 +1,298 @@
+/* --- 基础容器与混排优化 --- */
+.markdown-content {
+  /* 两侧对齐逻辑 */
+  text-align: justify;
+  text-justify: inter-character;
+  word-break: break-word;
+  line-break: strict; /* 严格避头尾，防止标点符号出现在行首 */
+  
+  font-size: 16px;
+  line-height: 1.85;
+  letter-spacing: 0.015em;
+  color: #374151; /* 杂志感的深灰色 */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* 暗色模式文字颜色 */
+html.dark .markdown-content {
+  color: #d1d5db;
+}
+
+/* 段落间距 */
+.markdown-content p {
+  margin: 1.6em 0;
+  text-indent: 0;
+}
+
+/* --- 标题强化 --- */
+.markdown-content :where(h1, h2, h3, h4, h5, h6) {
+  color: #111827;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-top: 2.5em; /* 增加上方留白形成章节感 */
+  margin-bottom: 1em;
+  text-wrap: balance; /* 防止标题单字成行 */
+}
+
+html.dark .markdown-content :where(h1, h2, h3, h4, h5, h6) {
+  color: #f3f4f6;
+}
+
+.markdown-content h1 { 
+  font-size: 2.2rem; 
+  border-bottom: 1px solid rgba(0,0,0,0.05); 
+  padding-bottom: 0.3em; 
+}
+.markdown-content h2 { 
+  font-size: 1.75rem; 
+  border-bottom: 1px solid rgba(0,0,0,0.03); 
+  padding-bottom: 0.2em; 
+}
+.markdown-content h3 { font-size: 1.45rem; }
+.markdown-content h4 { font-size: 1.2rem; }
+.markdown-content h5 { font-size: 1.1rem; }
+.markdown-content h6 { font-size: 1rem; opacity: 0.6; }
+
+/* 紧跟标题的第一个段落间距微调 */
+.markdown-content :where(h1, h2, h3, h4, h5, h6) + p {
+  margin-top: 0.8em;
+}
+
+
+/* --- 列表排版 --- */
+.markdown-content ul, .markdown-content ol {
+  margin: 1.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.markdown-content li {
+  margin: 0.6rem 0;
+  padding-left: 0.2rem;
+}
+
+/* 定制列表符号颜色 */
+.markdown-content ul { list-style-type: disc; }
+.markdown-content ol { list-style-type: decimal; }
+
+.markdown-content ::marker {
+  color: rgba(107, 114, 128, 0.6); /* 让圆点和数字颜色略浅 */
+  font-weight: 500;
+}
+
+/* 多级列表缩进 */
+.markdown-content li > ul, 
+.markdown-content li > ol {
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+
+
+/* --- 代码块核心 --- */
+.markdown-content pre {
+  position: relative;
+  margin: 2.5rem 0;
+  padding: 1.4rem !important;
+  border-radius: 14px;
+  background-color: #f6f8fa !important; /* 亮色底色 [cite: 16] */
+  border: 1px solid rgba(0,0,0,0.06);
+  overflow-x: auto;
+  font-size: 0.9em;
+}
+
+/* 暗黑模式强制覆盖 [cite: 17, 18] */
+html.dark .markdown-content pre {
+  background-color: #0d1117 !important; 
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+html.dark .markdown-content pre code {
+  color: #e6edf3 !important; [cite: 19]
+}
+
+/* 复制按钮容器 [cite: 20] */
+.markdown-content .copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+}
+
+/* 按钮样式 [cite: 21, 22] */
+.markdown-content .copy-btn button {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(0,0,0,0.08);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent; [cite: 23]
+}
+
+/* 桌面端 Hover 展示 [cite: 24, 25] */
+@media (min-width: 1024px) {
+  .markdown-content .copy-btn button { opacity: 0; }
+  .markdown-content pre:hover .copy-btn button { opacity: 1; }
+}
+
+html.dark .markdown-content .copy-btn button {
+  background: rgba(45, 45, 45, 0.8);
+  border-color: rgba(255, 255, 255, 0.1); [cite: 26]
+  color: #ccc;
+}
+
+
+/* --- 图片系统 --- */
+.markdown-content img {
+  max-width: 100%;
+  height: auto !important; /* 必须为 auto 确保放大组件计算正确 [cite: 28] */
+  border-radius: 12px;
+  margin: 2.5rem auto;
+  display: block;
+  cursor: zoom-in; /* 视觉提示可点击 [cite: 27] */
+  border: 1px solid rgba(125,125,125,0.1);
+}
+
+/* 配合 figure 使用 */
+.markdown-content figure {
+  margin: 3rem 0;
+  width: 100%;
+}
+
+.markdown-content figcaption {
+  text-align: center;
+  font-size: 0.85em;
+  margin-top: 0.8rem;
+  color: #6b7280;
+}
+
+/* --- 代码块：固定复制按钮 --- */
+.markdown-content pre {
+  position: relative;
+  margin: 2.5rem 0;
+  padding: 0 !important; /* 移除 pre 衬距，改由 code 处理 */
+  border-radius: 14px;
+  background-color: #f6f8fa !important;
+  border: 1px solid rgba(0,0,0,0.06);
+  /* 关键：pre 不滚动，内部滚动 */
+  overflow: visible !important; 
+}
+
+html.dark .markdown-content pre {
+  background-color: #0d1117 !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+/* 真正的滚动容器 */
+.markdown-content pre code {
+  display: block;
+  padding: 1.4rem !important;
+  overflow-x: auto; /* 只让代码内容滚动 */
+  border-radius: 14px;
+  word-wrap: normal;
+  white-space: pre;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 复制按钮现在相对于 pre 定位，不再随代码滚动 */
+.markdown-content .copy-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 20; /* 确保在滚动内容之上 */
+}
+
+
+/* --- 行内代码：极简呼吸感 --- */
+.markdown-content :not(pre) > code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace[cite: 3];
+  font-size: 0.88em;
+  background: rgba(125, 125, 125, 0.1);
+  color: #e06c75; /* 略微显眼的淡红色，也可改用 inherit */
+  padding: 0.15em 0.4em;
+  margin: 0 0.2em; /* 增加左右微量间距，解决中英文挤压 */
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  vertical-align: middle;
+}
+
+html.dark .markdown-content :not(pre) > code {
+  background: rgba(255, 255, 255, 0.1);
+  color: #df8590;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+
+/* --- 引用样式：杂志化间距 --- */
+.markdown-content blockquote {
+  margin: 2.5rem 0;
+  padding: 0.2rem 0 0.2rem 1.2rem;
+  border-left: 3px solid rgba(125, 125, 125, 0.3)[cite: 14];
+  color: #6b7280; /* 弱化引用的文字视觉权重 */
+  font-style: normal; /* 极简风通常不使用斜体以保持中文整洁 */
+}
+
+/* 引用内的段落处理 */
+.markdown-content blockquote p {
+  margin: 0.5em 0;
+  line-height: 1.7;
+}
+
+html.dark .markdown-content blockquote {
+  border-left-color: rgba(255, 255, 255, 0.2);
+  color: #9ca3af;
+}
+
+.markdown-content p {
+  text-align: justify;
+  text-justify: inter-character;
+  /* 确保最后一行左对齐，不被强行撑开 */
+  text-align-last: left; 
+}
+
+/* --- 中式极简引用 --- */
+.markdown-content blockquote {
+  margin: 3rem 0;
+  padding: 1.2rem 1.5rem;
+  /* 采用极细的左边框，增加虚实对比 */
+  border-left: 1px solid rgba(0, 0, 0, 0.2);
+  /* 淡淡的背景色，像宣纸一样的质感 */
+  background-color: rgba(0, 0, 0, 0.02);
+  border-radius: 0 4px 4px 0;
+  position: relative;
+}
+
+/* 装饰性细节：给引用加一个淡淡的引号或小图标（可选） */
+.markdown-content blockquote::before {
+  content: "“";
+  position: absolute;
+  top: -0.2rem;
+  left: 0.5rem;
+  font-size: 2rem;
+  font-family: "Georgia", serif;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+/* 引用内的文字排版 */
+.markdown-content blockquote p {
+  margin: 0.8em 0;
+  line-height: 1.8;
+  /* 中式排版中引用文字通常略细或颜色略浅 */
+  font-weight: 300;
+  color: #555;
+  font-size: 0.95em;
+}
+
+/* 暗色模式适配：宣纸变深色宣纸 */
+html.dark .markdown-content blockquote {
+  background-color: rgba(255, 255, 255, 0.03);
+  border-left-color: rgba(255, 255, 255, 0.3);
+}
+
+html.dark .markdown-content blockquote p {
+  color: #aaa;
+}
