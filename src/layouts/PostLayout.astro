@@ -2,7 +2,7 @@
 import BaseLayout from './BaseLayout.astro'
 import ImageGallery from '../components/ImageGallery.astro'
 import { formatDate } from '../utils'
-import '../styles/markdown.css' // ✅ 引入分离后的 CSS
+import '../styles/tufte.css'
 
 const { frontmatter } = Astro.props
 const displayTitle = frontmatter?.title || '无标题'
@@ -18,8 +18,8 @@ const description = frontmatter?.description
     </div>
   </header>
 
-  {/* 统一类名，移除 prose 默认干扰，改由 markdown.css 完全控制 */}
-  <article class="markdown-content">
+  {/* 统一类名，移除 prose 默认干扰，改由 markdown.css markdown-content 完全控制 */}
+  <article class="tufte">
     <slot />
   </article>
 
