@@ -2,7 +2,7 @@
 import BaseLayout from './BaseLayout.astro'
 import ImageGallery from '../components/ImageGallery.astro'
 import { formatDate } from '../utils'
-import '../styles/github-markdown.css'
+// import '../styles/github-markdown.css'
 
 const { frontmatter } = Astro.props
 const displayTitle = frontmatter?.title || '无标题'
@@ -19,7 +19,7 @@ const description = frontmatter?.description
   </header>
 
   {/* 统一类名，移除 prose 默认干扰，改由 markdown.css markdown-content 完全控制 */}
-  <article class="markdown-body">
+  <article class="prose">
     <slot />
   </article>
 
