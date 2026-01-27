@@ -5,6 +5,7 @@ publishDate: 2026-01-21
 
 ## 由来
 
+
 **单纯的做一个圆柱类的杯子完全不必如此复杂。**
 
 有次做一个陶瓷器皿需要在器皿上做凸起，正常做法是展 UV ，然后制作置换贴图。但这里会涉及到一些问题：
@@ -23,13 +24,13 @@ publishDate: 2026-01-21
 - Weld（焊接）
 - Solidify（实体化）
 
-## 简易形变<Marker>核心修改器</Marker>
+## 简易形变
 
-> 圆周计算公式：<span class="text-color-black">C = 2 &pi; r</span>
+> 圆周计算公式：C = 2 &pi; r
 
-下面我们假设有一个： 80 &times; 90 mm(h) 的圆柱形杯子<br>
-经过计算可以得出：C = 80 &times; &pi; = 251.32 mm<br>
-结合 90 mm 的高度，可得这个圆柱杯子外壁展开状态的尺寸：251.32 &times; 90 mm(h) 的矩形<br>
+下面我们假设有一个： 80 &times; 90 mm(h) 的圆柱形杯子。<br/>
+经过计算可以得出：C = 80 &times; &pi; = 251.32 mm<br/>
+结合 90 mm 的高度，可得这个圆柱杯子外壁展开状态的尺寸：251.32 &times; 90 mm(h) 的矩形<br/>
 **这个矩形将是一切的开始**
 
 ![step-1](/images/post/blender/圆周器皿制作/step-1.webp)
@@ -42,7 +43,6 @@ publishDate: 2026-01-21
 
 把这个大矩形**垂直**均分 `32` 片，为什么是垂直的？因为需要在垂直方向（Z轴）**卷起来**。
 
-> [!TIP]
 > 这里切割数字是 31 次
 
 ![step-2](/images/post/blender/圆周器皿制作/step-2.webp)
@@ -55,7 +55,7 @@ publishDate: 2026-01-21
 ![step-3-1](/images/post/blender/圆周器皿制作/step-3-1.webp)
 ![step-3-2](/images/post/blender/圆周器皿制作/step-3-2.webp)
 
-## 焊接<Marker>核心修改器</Marker>
+## 焊接
 
 这个修改器是为了让矩形头尾相连，不然应用掉简易形变修改器后头尾无法相连，存在断点。
 距离根据自己需要调节，我这边做的器皿比较小，所以选择了 **0.1 mm**
@@ -70,7 +70,6 @@ publishDate: 2026-01-21
 
 ![step-5](/images/post/blender/圆周器皿制作/step-5.webp)
 
-> [!TIP]
 > 这里挤出方向需要注意面法向一致。
 
 **到这里，我们就完成了一个不带壁厚的杯子了！**
@@ -85,7 +84,7 @@ publishDate: 2026-01-21
 
 - **模式：** 简单形
 - **厚度：** 3mm
-- **均匀厚度：** <div class="bg-blue-5 dark:bg-blue-4" i-material-symbols:check-box-rounded />
+- **均匀厚度：**
 
 ![step-7](/images/post/blender/圆周器皿制作/step-7.webp)
 

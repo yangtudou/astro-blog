@@ -1,0 +1,43 @@
+---
+// Callout.astro
+const { type = 'note' } = Astro.props;
+
+const stamps = {
+  note: '註',
+  warn: '警',
+  idea: '悟',
+};
+
+const colors = {
+  note: 'border-black/10 bg-gray-50/50 dark:border-white/10 dark:bg-white/5',
+  warn: 'border-red-400/30 bg-red-50/30 dark:bg-red-400/5',
+  idea: 'border-blue-400/30 bg-blue-50/30 dark:bg-blue-400/5',
+};
+
+// 预先计算好类名字符串
+const containerClass = `callout-container relative my-10 p-5 border-l-2 rounded-r-lg list-none ${colors[type] || colors.note}`;
+---
+
+<blockquote class={containerClass}>
+  <div class="stamp-bg absolute right-4 bottom-[-15px] text-6xl opacity-[0.04] dark:opacity-[0.08] select-none pointer-events-none italic">
+    {stamps[type] || stamps.note}
+  </div>
+  
+  <div class="callout-content">
+    <slot />
+  </div>
+</blockquote>
+
+<style>
+  .callout-container {
+    text-align: justify;
+    text-justify: inter-character;
+  }
+  .stamp-bg {
+    font-family: "STKaiti", "KaiTi", serif;
+  }
+  /* 确保 MDX 渲染进来的 p 标签不会破坏间距 */
+  .callout-content :global(p) {
+    margin: 0 !important;
+  }
+</style>
