@@ -49,7 +49,7 @@ function getGroupName(post: any) { return isFuture(post.date) ? '即将推出...
       return (
         <div class="relative">
           {showGroup && (
-            <div class="select-none relative h-20 pointer-events-none slide-enter" style={`--enter-stage: ${idx - 2}; --enter-step: 100ms;`}>
+            <div class="select-none relative h-20 pointer-events-none slide-enter font-Inter" style={`--enter-stage: ${idx - 2}; --enter-step: 100ms;`}>
               <span class="text-8rem absolute font-bold z--1 top--2rem -left-3rem text-transparent text-stroke-1 text-stroke-hex-aaa opacity-20 dark:text-stroke-hex-555 dark:opacity-40">
                 {getGroupName(post)}
               </span>
@@ -61,7 +61,7 @@ function getGroupName(post: any) { return isFuture(post.date) ? '即将推出...
                 <div class="text-lg leading-1.2em text-black dark:text-white">
                   <span class="align-middle font-normal">{post.title}</span>
                 </div>
-                <div class="flex items-center text-sm tabular-nums opacity-40 whitespace-nowrap md:ml-2">
+                <div class="font-Inter flex items-center text-sm tabular-nums opacity-40 whitespace-nowrap md:ml-2">
                   <span>{formatDate(post.date)}</span>
                 </div>
               </div>

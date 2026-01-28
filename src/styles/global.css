@@ -1,0 +1,6 @@
+/* 英文无衬线字体 - 优雅现代 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+.font-Inter {
+  font-family: 'Inter', sans-serif;
+}

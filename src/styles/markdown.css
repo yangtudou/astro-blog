@@ -116,9 +116,10 @@ html.dark .markdown-content {
   color: var(--heading-color);
   font-weight: 600;
   line-height: 1.4;
-  margin-top: 2.8em;
-  margin-bottom: 1.2em;
-  text-wrap: balance;
+  /* margin-top: 2.8em; */
+  /* margin-bottom: 1.2em; */
+  /* text-wrap: balance; */
+  text-wrap: wrap;
   scroll-margin-top: 2rem;
   font-family: var(--font-heading);
   letter-spacing: 0.05em; /* 标题字距略宽 */
@@ -126,7 +127,7 @@ html.dark .markdown-content {
 
 .markdown-content h1 { 
   font-size: 2.4rem; 
-  border-bottom: 2px solid var(--border-light);
+  /* border-bottom: 2px solid var(--border-light); */
   padding-bottom: 0.4em;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -134,7 +135,7 @@ html.dark .markdown-content {
 
 .markdown-content h2 { 
   font-size: 1.9rem; 
-  border-bottom: 1px solid var(--border-light);
+  /* border-bottom: 1px solid var(--border-light); */
   padding-bottom: 0.3em;
   font-weight: 600;
 }
@@ -255,71 +256,76 @@ html.dark .markdown-content pre code {
   letter-spacing: 0.08em;
   z-index: 2;
   font-weight: 600;
-  opacity: 0.6;
-  padding: 0.25rem 0.6rem;
-  background: var(--blockquote-bg);
-  border-radius: 6px;
-  border: 1px solid var(--border-light);
+  opacity: 0.5;
 }
 
-/* 复制按钮容器 */
+/* 复制按钮容器 - 与代码内容顶部对齐 */
 .markdown-content .copy-btn {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 10px; /* 与语言标签相同位置 */
+  right: 16px;
   z-index: 20;
 }
 
 /* 复制按钮样式 - 与引用块协调 */
 .markdown-content .copy-btn button {
-  width: 34px;
-  height: 34px;
+  width: 28px; /* 缩小按钮 */
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.25); /* 更淡的背景 */
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid var(--border-light);
+  border: 1px solid rgba(0, 0, 0, 0.04); /* 更淡的边框 */
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-tap-highlight-color: transparent;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02); /* 更淡的阴影 */
 }
 
-.markdown-content .copy-btn button:hover {
-  background: rgba(255, 255, 255, 1);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+/* 按钮内图标大小调整 */
+.markdown-content .copy-btn button svg {
+  width: 14px;
+  height: 14px;
 }
 
-.markdown-content .copy-btn button:active {
-  transform: translateY(0) scale(0.95);
-}
-
-/* 桌面端：默认隐藏，悬停显示 */
+/* 桌面端：默认隐藏，悬停显示 + hover 效果 */
 @media (min-width: 1024px) {
   .markdown-content .copy-btn button { 
-    opacity: 0; 
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   .markdown-content pre:hover .copy-btn button { 
     opacity: 1; 
   }
+  
+  .markdown-content .copy-btn button:hover {
+    background: rgba(255, 255, 255, 0.6); /* 悬停时稍微实一点 */
+    transform: scale(1.08);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  }
+  
+  .markdown-content .copy-btn button:active {
+    transform: scale(0.95);
+  }
 }
 
 /* 暗色模式优化 */
 html.dark .markdown-content .copy-btn button {
-  background: rgba(60, 55, 70, 0.9);
-  border-color: rgba(167, 139, 250, 0.2);
+  background: rgba(60, 55, 70, 0.3); /* 更淡的暗色背景 */
+  border-color: rgba(167, 139, 250, 0.15);
   color: #e9d5ff;
 }
 
-html.dark .markdown-content .copy-btn button:hover {
-  background: rgba(75, 65, 90, 1);
-  border-color: rgba(167, 139, 250, 0.4);
-  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
+/* 暗色模式下的 hover（仅桌面端） */
+@media (min-width: 1024px) {
+  html.dark .markdown-content .copy-btn button:hover {
+    background: rgba(75, 65, 90, 0.6);
+    border-color: rgba(167, 139, 250, 0.3);
+    box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+  }
 }
 
 html.dark .markdown-content pre {
@@ -334,6 +340,12 @@ html.dark .markdown-content pre::before {
     rgba(167, 139, 250, 0.05),
     transparent
   );
+}
+
+/* 暗色模式下的语言标签 */
+html.dark .markdown-content pre[data-language]::before {
+  color: var(--text-muted);
+  opacity: 0.7;
 }
 
 
@@ -447,13 +459,19 @@ html.dark .markdown-content pre::before {
   display: block;
   cursor: zoom-in;
   border: 1px solid var(--border-light);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
-.markdown-content img:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+/* 图片悬停效果 - 仅桌面端 */
+@media (min-width: 1024px) {
+  .markdown-content img {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .markdown-content img:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
 }
 
 /* Figure 元素 */
@@ -628,6 +646,18 @@ html.dark .markdown-content mark {
   .markdown-content pre code {
     font-size: 0.85em;
     padding: 2.8rem 1.2rem 1.2rem !important; /* 移动端也保持顶部空间 */
+  }
+  
+  /* 移动端复制按钮和语言标签位置调整 */
+  .markdown-content .copy-btn {
+    top: 8px;
+    right: 12px;
+  }
+  
+  .markdown-content pre[data-language]::before {
+    top: 8px;
+    left: 12px;
+    font-size: 0.65rem;
   }
   
   .markdown-content table {

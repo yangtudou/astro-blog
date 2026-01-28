@@ -33,7 +33,7 @@ publishDate: 2026-01-21
 结合 90 mm 的高度，可得这个圆柱杯子外壁展开状态的尺寸：251.32 &times; 90 mm(h) 的矩形<br/>
 **这个矩形将是一切的开始**
 
-![step-1](/images/post/blender/圆周器皿制作/step-1.webp)
+![step-1](./images/step-1.webp)
 
 在这之前，需要理解一个概念。圆柱肯定是由无数的面拼合起来的（这里先去掉顶面和底面）
 
@@ -45,22 +45,22 @@ publishDate: 2026-01-21
 
 > 这里切割数字是 31 次
 
-![step-2](/images/post/blender/圆周器皿制作/step-2.webp)
+![step-2](./images/step-2.webp)
 
 ### 2. 添加简易形变修改器
 
 这里选择**弯曲**，角度填写 **360°** ，轴向 **Z**。于是你会得到一个没有顶面和底面的柱体。
 尺寸为 **80 &times; 80 &times; 90 mm**
 
-![step-3-1](/images/post/blender/圆周器皿制作/step-3-1.webp)
-![step-3-2](/images/post/blender/圆周器皿制作/step-3-2.webp)
+![step-3-1](./images/step-3-1.webp)
+![step-3-2](./images/step-3-2.webp)
 
 ## 焊接
 
 这个修改器是为了让矩形头尾相连，不然应用掉简易形变修改器后头尾无法相连，存在断点。
 距离根据自己需要调节，我这边做的器皿比较小，所以选择了 **0.1 mm**
 
-![step-3-2](/images/post/blender/圆周器皿制作/step-4.webp)
+![step-3-2](./images/step-4.webp)
 
 ## 增加底面
 
@@ -68,13 +68,13 @@ publishDate: 2026-01-21
 
 所以沿着底边挤出，这里是 **40 mm**，如图所示。
 
-![step-5](/images/post/blender/圆周器皿制作/step-5.webp)
+![step-5](./images/step-5.webp)
 
 > 这里挤出方向需要注意面法向一致。
 
 **到这里，我们就完成了一个不带壁厚的杯子了！**
 
-![step-6](/images/post/blender/圆周器皿制作/step-6.webp)
+![step-6](./images/step-6.webp)
 
 ## 增加壁厚
 
@@ -86,11 +86,11 @@ publishDate: 2026-01-21
 - **厚度：** 3mm
 - **均匀厚度：**
 
-![step-7](/images/post/blender/圆周器皿制作/step-7.webp)
+![step-7](./images/step-7.webp)
 
 于是的到了一个带壁厚的杯子。
 
-![step-8](/images/post/blender/圆周器皿制作/step-8.webp)
+![step-8](./images/step-8.webp)
 
 当然这里涉及到，底厚？底部是否需要锥化？这些问题留到下次再写了。
 到这里，已经实现了基础的思路。
