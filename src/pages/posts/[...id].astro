@@ -1,17 +1,19 @@
 ---
 import PostLayout from '../../layouts/PostLayout.astro';
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
   const allPosts = await getCollection('post');
+  
   return allPosts.map((post) => ({
-    params: { slug: post.slug },
+    // 这里的 id 必须匹配文件名 [...id].astro
+    params: { id: post.id },
     props: { post },
   }));
 }
 
 const { post } = Astro.props;
-const { Content } = await post.render();
+const { Content } = await render(post);
 ---
 
 <PostLayout frontmatter={post.data}>

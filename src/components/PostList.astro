@@ -2,71 +2,41 @@
 import { getCollection } from 'astro:content'
 import type { CollectionEntry } from 'astro:content'
 
-// 定义 Props 接口
 export interface Props {
   posts?: CollectionEntry<'post'>[]
 }
 
 const { posts: propPosts = [] } = Astro.props
-
-// 获取所有文章
 const allPosts = await getCollection('post')
 
-// 过滤和转换文章数据
 const filteredPosts = allPosts
-  .filter(post => {
-    // 过滤掉草稿
-    if (post.data.draft) return false
-    return true
-  })
+  .filter(post => !post.data.draft)
   .map(post => ({
     id: post.id,
-    slug: post.slug,
     title: post.data.title,
     date: post.data.publishDate,
   }))
 
-// 合并文章列表
+// 修复了之前导致报错的排序逻辑
 const allPostsList = [...propPosts, ...filteredPosts]
   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
-// 工具函数
 function formatDate(date: Date | string) {
   const d = new Date(date)
   const currentYear = new Date().getFullYear()
   const postYear = d.getFullYear()
-  
-  // 如果是当前年份，只显示月份和日期
   if (postYear === currentYear) {
     return `${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
   }
-  
-  // 对于往年文章，显示完整日期
   return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
 }
 
-function getYear(date: Date | string) {
-  return new Date(date).getFullYear()
-}
-
-function isFuture(date?: Date | string) {
-  return date && new Date(date) > new Date()
-}
-
-function isSameYear(a?: Date | string, b?: Date | string) {
-  return a && b && getYear(a) === getYear(b)
-}
-
-function isSameGroup(a: any, b?: any) {
-  return (isFuture(a.date) === isFuture(b?.date)) && isSameYear(a.date, b?.date)
-}
-
-function getGroupName(post: any) {
-  if (isFuture(post.date)) return '即将推出...'
-  return getYear(post.date)
-}
+function getYear(date: Date | string) { return new Date(date).getFullYear() }
+function isFuture(date?: Date | string) { return date && new Date(date) > new Date() }
+function isSameYear(a?: Date | string, b?: Date | string) { return a && b && getYear(a) === getYear(b) }
+function isSameGroup(a: any, b?: any) { return (isFuture(a.date) === isFuture(b?.date)) && isSameYear(a.date, b?.date) }
+function getGroupName(post: any) { return isFuture(post.date) ? '即将推出...' : getYear(post.date) }
 ---
-
 
 <div class="flex flex-col">
   {allPostsList.length === 0 ? (
@@ -74,46 +44,23 @@ function getGroupName(post: any) {
   ) : (
     allPostsList.map((post, idx) => {
       const showGroup = !isSameGroup(post, allPostsList[idx - 1]);
-      const href = `/post/${post.slug}`;
+      const href = `/posts/${post.id}`;
       
       return (
         <div class="relative">
-          {/* 年份/分组水印：使用 UnoCSS 原生 text-stroke */}
           {showGroup && (
-            <div 
-              class="select-none relative h-20 pointer-events-none slide-enter"
-              style={`--enter-stage: ${idx - 2}; --enter-step: 100ms;`}
-            >
-              <span 
-                class="text-8rem absolute font-bold z--1 top--2rem -left-3rem 
-                       text-transparent 
-                       text-stroke-1 text-stroke-hex-aaa opacity-20
-                       dark:text-stroke-hex-555 dark:opacity-40"
-              >
+            <div class="select-none relative h-20 pointer-events-none slide-enter" style={`--enter-stage: ${idx - 2}; --enter-step: 100ms;`}>
+              <span class="text-8rem absolute font-bold z--1 top--2rem -left-3rem text-transparent text-stroke-1 text-stroke-hex-aaa opacity-20 dark:text-stroke-hex-555 dark:opacity-40">
                 {getGroupName(post)}
               </span>
             </div>
           )}
-          
-          <div
-            class="slide-enter"
-            style={`--enter-stage: ${idx}; --enter-step: 100ms;`}
-          >
-            <a 
-              href={href}
-              class="block mb-6 mt-2 no-underline group"
-            >
-              {/* 内容区域：日期紧贴标题 */}
+          <div class="slide-enter" style={`--enter-stage: ${idx}; --enter-step: 100ms;`}>
+            <a href={href} class="block mb-6 mt-2 no-underline group">
               <div class="flex flex-col md:flex-row gap-2 md:items-center transition-opacity duration-200 hover:opacity-100">
-                
-                {/* 标题 */}
                 <div class="text-lg leading-1.2em text-black dark:text-white">
-                  <span class="align-middle font-normal">
-                    {post.title}
-                  </span>
+                  <span class="align-middle font-normal">{post.title}</span>
                 </div>
-                
-                {/* 日期：紧跟标题 */}
                 <div class="flex items-center text-sm tabular-nums opacity-40 whitespace-nowrap md:ml-2">
                   <span>{formatDate(post.date)}</span>
                 </div>
@@ -126,31 +73,13 @@ function getGroupName(post: any) {
   )}
 </div>
 
-
 <style is:global>
-  /* 1. 稍微加大位移距离，配合贝塞尔曲线效果更明显 */
   @keyframes slide-enter {
-    0% {
-      transform: translateY(20px);
-      opacity: 0;
-    }
-    100% {
-      transform: translateY(0);
-      opacity: 1;
-    }
+    0% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
   }
-
   .slide-enter {
-    --enter-step: 100ms;
-    --enter-stage: 0;
-    --enter-initial: 0ms;
-
-    /* 使用这种特定的贝塞尔曲线：cubic-bezier(0.4, 0, 0.2, 1) 
-       或者更具弹性的：cubic-bezier(0.2, 0.8, 0.2, 1) 
-    */
     animation: slide-enter 3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    
-    /* 延迟逻辑保持不变 */
-    animation-delay: calc(var(--enter-initial) + var(--enter-stage) * var(--enter-step));
+    animation-delay: calc(var(--enter-stage) * 100ms);
   }
 </style>

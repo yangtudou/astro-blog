@@ -16,7 +16,10 @@ export default defineConfig({
             },
         }
     },
-    integrations: [UnoCSS({
-        injectReset: true
-    }), mdx()]
+    integrations: [
+        UnoCSS({
+          injectReset: true
+        }),
+        mdx()
+    ]
 });

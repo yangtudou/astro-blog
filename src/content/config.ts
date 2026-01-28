@@ -1,10 +1,9 @@
 import { defineCollection, z } from 'astro:content';
+import { glob } from 'astro/loaders';
 
-// post 目录下的 md 文件
-// 顶部信息预设
-// 需要注意必填，这里默认必填  title 、publishDate
 const postCollection = defineCollection({
-  type: 'content',
+  // 移除 type: 'content'，改用 loader
+  loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: "./posts" }),
   schema: z.object({
     title: z.string(),
     publishDate: z.date(),
@@ -13,7 +12,6 @@ const postCollection = defineCollection({
     tags: z.array(z.string()).optional(),
   }),
 });
-
 
 export const collections = {
   'post': postCollection,
