@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@astrojs/mdx": "^4.3.13",
-    "astro": "^5.16.12",
+    "astro": "^5.16.15",
     "pixi.js": "^8.15.0",
     "simplex-noise": "^4.0.3"
   },
