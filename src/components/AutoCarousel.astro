@@ -1,0 +1,104 @@
+---
+/**
+ * 纯净横向滚动版 AutoCarousel.astro
+ * 特点：移除背景，强制垂直居中，不拉伸小图
+ */
+---
+<script>
+  function initAutoCarousel() {
+    const content = document.querySelector('.markdown-content');
+    if (!content) return;
+
+    const paragraphs = content.querySelectorAll('p');
+
+    paragraphs.forEach((p) => {
+      // 找到包含 |scroll 标记的图片
+      const images = Array.from(p.querySelectorAll('img')).filter(img => 
+        img.alt.includes('|scroll')
+      );
+
+      if (images.length >= 2) {
+        let totalHeight = 0;
+        let loadedCount = 0;
+
+        const processImages = () => {
+          // 1. 计算平均高度作为容器高度
+          const avgHeight = totalHeight / images.length;
+          const containerHeight = Math.min(avgHeight, 500); // 最大不超 500px
+
+          const container = document.createElement('div');
+          container.className = 'custom-scroll-container';
+          
+          const track = document.createElement('div');
+          track.className = 'custom-scroll-track';
+          track.style.height = `${containerHeight}px`;
+
+          images.forEach(img => {
+            const newImg = img.cloneNode(true) as HTMLImageElement;
+            newImg.alt = newImg.alt.replace('|scroll', '');
+
+            // 2. 核心样式：确保不拉伸，垂直居中
+            newImg.style.maxHeight = '100%'; // 不超过容器高度
+            newImg.style.width = 'auto';     // 保持比例
+            newImg.style.display = 'block';
+            newImg.style.flex = '0 0 auto';  // 禁止压缩
+            
+            track.appendChild(newImg);
+          });
+
+          container.appendChild(track);
+          p.parentNode?.replaceChild(container, p);
+        };
+
+        // 确保图片加载后获取真实高度
+        images.forEach(img => {
+          if (img.complete) {
+            totalHeight += img.naturalHeight;
+            loadedCount++;
+            if (loadedCount === images.length) processImages();
+          } else {
+            img.onload = () => {
+              totalHeight += img.naturalHeight;
+              loadedCount++;
+              if (loadedCount === images.length) processImages();
+            };
+          }
+        });
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', initAutoCarousel);
+  initAutoCarousel();
+</script>
+
+<style is:global>
+  /* 横向滚动容器 */
+  .custom-scroll-container {
+    width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    scroll-snap-type: x mandatory;
+    margin: 2rem 0 !important;
+    scrollbar-width: none; /* 移动端隐藏滚动条 */
+  }
+  .custom-scroll-container::-webkit-scrollbar { display: none; }
+
+  /* 滚动轨道 */
+  .custom-scroll-track {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 16px !important;
+    width: max-content !important;
+    align-items: center !important; /* ✅ 关键：确保所有图片垂直居中对齐 */
+    padding: 10px 0 !important;
+  }
+
+  .custom-scroll-track img {
+    scroll-snap-align: start;
+    border-radius: 8px;
+    cursor: zoom-in;
+    /* 这里的样式大部分已由 JS 内联控制 */
+  }
+</style>
