@@ -92,7 +92,7 @@ html.dark .markdown-content {
   font-size: 17px; /* 衬线字体略大更舒适 */
   line-height: 1.9; /* 更宽松的行高 */
   letter-spacing: 0.02em;
-  color: var(--text-primary);
+  /* color: var(--text-primary); */
   font-family: var(--font-body);
   
   /* 字体渲染优化 */
