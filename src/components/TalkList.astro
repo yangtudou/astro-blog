@@ -1,0 +1,198 @@
+---
+import { getCollection } from 'astro:content'
+import type { CollectionEntry } from 'astro:content'
+import { Image } from 'astro:assets'
+
+import ImageGallery from '../components/ImageGallery.astro';
+
+export interface Props {
+  talks?: CollectionEntry<'talk'>[]
+}
+
+const { talks: propTalks = [] } = Astro.props
+const allTalks = await getCollection('talk')
+
+const filteredTalks = allTalks
+  .filter(talk => !talk.data.draft)
+  .map(talk => ({
+    id: talk.id,
+    title: talk.data.title,
+    cover: talk.data.cover,
+    date: talk.data.publishDate,
+    excerpt: talk.data.excerpt,
+  }))
+
+const allTalksList = [...propTalks, ...filteredTalks]
+  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+// 在 TalkList.astro 的 --- 脚本块中替换此函数
+function formatDate(date: Date | string) {
+  const d = new Date(date)
+  const currentYear = new Date().getFullYear()
+  const postYear = d.getFullYear()
+
+  // 如果是当年，返回 MM-DD 
+  if (postYear === currentYear) {
+    return `${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
+  }
+  
+  // 否则返回 YYYY-MM-DD 
+  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
+}
+---
+
+<ImageGallery selector=".talk-image-box" />
+<div class="talk-list">
+  {allTalksList.length === 0 ? (
+    <div class="empty-state">这里还什么都没有</div>
+  ) : (
+    <div class="talks-grid">
+      {allTalksList.map((talk, idx) => (
+        <div class="talk-item slide-enter" style={`--enter-stage: ${idx}; --enter-step: 100ms;`}>
+          <div class="talk-container">
+            
+            <div class="talk-top-row">
+              <span class="talk-title">{talk.title}</span>
+              <span class="talk-date">{formatDate(talk.date)}</span>
+            </div>
+
+            <div class="talk-image-box">
+              <Image 
+                src={talk.cover} 
+                alt={talk.title} 
+                width={800} 
+                height={1000}
+                loading="lazy" 
+              />
+            </div>
+
+            <div class="talk-bottom-row">
+              <p class="talk-excerpt">{talk.excerpt}</p>
+            </div>
+
+          </div>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
+<style>
+  .talk-list {
+    width: 100%;
+  }
+
+  .talks-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4rem 2rem;
+  }
+
+  /* 针对 iPhone 16 Pro Max 等设备，若想单列大图则保持 500px，若想双列则调低此值 */
+  @media (min-width: 500px) {
+    .talks-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 3rem 1.5rem;
+    }
+  }
+
+  @media (min-width: 1100px) {
+    .talks-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 5rem 2rem;
+    }
+  }
+
+  .talk-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  @media (min-width: 500px) {
+    .talk-container {
+      max-width: 100%;
+    }
+  }
+
+  .talk-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.6rem;
+  }
+
+  .talk-title {
+    font-size: 0.95rem;
+    /* font-weight: 500; */
+    opacity: 0.8;
+    margin: 0;
+  }
+
+  .talk-date {
+    font-size: 0.75rem;
+    font-family: monospace;
+    opacity: 0.6;
+    margin-left: 0.5rem;
+  }
+
+  .talk-image-box {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    background-color: #f0f0f0;
+    overflow: hidden;
+  }
+
+  .talk-image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Excerpt 样式：严格左右对齐图片边缘 */
+  .talk-bottom-row {
+    margin-top: 1.5rem; /* 移动端间距 */
+    width: 100%;
+  }
+
+  @media (min-width: 768px) {
+    .talk-bottom-row {
+      margin-top: 0.8rem; /* 桌面端间距 */
+    }
+  }
+
+  .talk-excerpt {
+    font-size: 1.05rem; /* 移动端字号 */
+    line-height: 1.5;
+    margin: 0;
+    /* opacity: 0.8; */
+    /* 核心：两端对齐 */
+    text-align: justify;
+    text-justify: inter-word;
+    word-break: break-word;
+  }
+
+  @media (min-width: 768px) {
+    .talk-excerpt {
+      font-size: 0.85rem; /* 桌面端字号 */
+    }
+  }
+
+  .slide-enter {
+    animation: slide-up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--enter-stage) * var(--enter-step));
+  }
+
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .empty-state {
+    padding: 3rem 0;
+    opacity: 0.5;
+    text-align: center;
+  }
+</style>
