@@ -1,88 +1,150 @@
 ---
-/**
- * 通用图片画廊组件
- * 支持点击图片弹出大图预览，具备模糊背景和缩放动画
- */
 interface Props {
-  // 允许自定义需要监听图片的父级容器选择器，默认为常见文章和图片容器
   selector?: string;
 }
 
-const { selector = '.markdown-content, .talk-image, .image-container' } = Astro.props;
+const { selector = '.markdown-content, .talk-image, .image-container, .talk-image-box' } = Astro.props;
 ---
 
 <div id="lightbox-overlay" class="lightbox-hidden" aria-hidden="true">
+  <button id="lightbox-close" class="gallery-ctrl-btn close-btn" title="关闭">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+  </button>
+  
+  <button id="lightbox-prev" class="gallery-ctrl-btn nav-btn prev" title="上一张">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  
   <div class="lightbox-wrapper">
-    <img id="lightbox-image" src="" alt="图片预览" />
+    <div id="lightbox-loader" class="loader-hidden"></div>
+    <img id="lightbox-image" src="" alt="预览图片" />
   </div>
+
+  <button id="lightbox-next" class="gallery-ctrl-btn nav-btn next" title="下一张">
+    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+  </button>
 </div>
 
 <script define:vars={{ selector }}>
   function initGallery() {
     const overlay = document.getElementById('lightbox-overlay');
     const lightboxImg = document.getElementById('lightbox-image');
+    const loader = document.getElementById('lightbox-loader');
+    const btnPrev = document.getElementById('lightbox-prev');
+    const btnNext = document.getElementById('lightbox-next');
+    const btnClose = document.getElementById('lightbox-close');
 
     if (!overlay || !lightboxImg) return;
 
-    const handleImageClick = (e) => {
-      const target = e.target;
-      
-      // 1. 检查是否是图片
-      if (!(target instanceof HTMLImageElement)) return;
-      
-      // 2. 检查图片是否在指定的通用选择器容器内
-      const isGalleryImg = target.closest(selector);
-      
-      // 3. 过滤掉过小的图片（如图标）和占位图
-      if (isGalleryImg && target.naturalWidth > 150) {
-        e.preventDefault();
-        
+    let currentIndex = -1;
+    let galleryImages = [];
+    let lastActiveImg = null;
+
+    const updateGalleryList = () => {
+      const allImgs = Array.from(document.querySelectorAll(`${selector} img`));
+      galleryImages = allImgs.filter(img => img.naturalWidth > 150);
+    };
+
+    const getTransformToTarget = (rect) => {
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      const translateX = centerX - window.innerWidth / 2;
+      const translateY = centerY - window.innerHeight / 2;
+      const scale = rect.width / (window.innerWidth * 0.85); 
+      return `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+    };
+
+    const showImage = (index, isOpening = false) => {
+      if (index < 0 || index >= galleryImages.length) return;
+      currentIndex = index;
+      lastActiveImg = galleryImages[currentIndex];
+      const target = lastActiveImg;
+
+      loader.classList.remove('loader-hidden');
+
+      const tempImg = new Image();
+      tempImg.src = target.src;
+      tempImg.onload = () => {
         lightboxImg.src = target.src;
         lightboxImg.alt = target.alt || '预览图片';
         
-        overlay.classList.remove('lightbox-hidden');
-        overlay.classList.add('lightbox-visible');
-        overlay.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden'; // 禁止背景滚动
+        if (isOpening) {
+          const rect = target.getBoundingClientRect();
+          lightboxImg.style.transition = 'none';
+          lightboxImg.style.transform = getTransformToTarget(rect);
+          lightboxImg.style.opacity = '1'; // 初始即不透明
+          
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              lightboxImg.style.transition = 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease-out';
+              lightboxImg.style.transform = 'translate(0, 0) scale(1)';
+            });
+          });
+        }
+        loader.classList.add('loader-hidden');
+      };
+
+      const isMultiple = galleryImages.length > 1;
+      btnPrev.style.display = isMultiple ? 'flex' : 'none';
+      btnNext.style.display = isMultiple ? 'flex' : 'none';
+    };
+
+    const handleImageClick = (e) => {
+      const target = e.target;
+      if (!(target instanceof HTMLImageElement)) return;
+      if (target.closest(selector) && target.naturalWidth > 150) {
+        e.preventDefault();
+        updateGalleryList();
+        const index = galleryImages.indexOf(target);
+        if (index !== -1) {
+          overlay.classList.remove('lightbox-hidden');
+          overlay.classList.add('lightbox-visible');
+          document.body.style.overflow = 'hidden';
+          showImage(index, true);
+        }
       }
     };
 
-    const closeLightbox = () => {
-      overlay.classList.remove('lightbox-visible');
-      overlay.classList.add('lightbox-hidden');
-      overlay.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = '';
-      setTimeout(() => { lightboxImg.src = ''; }, 300); // 清理资源
+    const close = () => {
+      if (lastActiveImg) {
+        const rect = lastActiveImg.getBoundingClientRect();
+        // 核心：慢慢缩回原尺寸，保持透明度，直到接近完成时才隐藏
+        lightboxImg.style.transition = 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)';
+        lightboxImg.style.transform = getTransformToTarget(rect);
+      }
+      
+      // 蒙层淡出，给图片预留缩回时间
+      overlay.style.opacity = '0';
+      
+      setTimeout(() => { 
+        overlay.classList.remove('lightbox-visible');
+        overlay.classList.add('lightbox-hidden');
+        overlay.style.opacity = '';
+        document.body.style.overflow = '';
+        lightboxImg.src = '';
+      }, 700);
     };
 
-    // 使用事件委托，提高性能且支持动态加载的内容
     document.addEventListener('click', handleImageClick);
-    overlay.addEventListener('click', closeLightbox);
+    btnClose.onclick = (e) => { e.stopPropagation(); close(); };
+    overlay.onclick = (e) => { if (e.target === overlay) close(); };
+    btnPrev.onclick = (e) => { e.stopPropagation(); if (currentIndex > 0) showImage(currentIndex - 1); };
+    btnNext.onclick = (e) => { e.stopPropagation(); if (currentIndex < galleryImages.length - 1) showImage(currentIndex + 1); };
 
-    // 支持 ESC 键关闭
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && overlay.classList.contains('lightbox-visible')) {
-        closeLightbox();
-      }
+      if (!overlay.classList.contains('lightbox-visible')) return;
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft') btnPrev.click();
+      if (e.key === 'ArrowRight') btnNext.click();
     });
   }
 
-  // 适配 Astro 的页面平滑转换
   document.addEventListener('astro:page-load', initGallery);
-  // 初次加载初始化
   initGallery();
 </script>
 
 <style is:global>
-  :root {
-    --lightbox-bg: rgba(255, 255, 255, 0.85);
-    --lightbox-blur: 20px;
-  }
-
-  html.dark :root {
-    --lightbox-bg: rgba(10, 10, 10, 0.85);
-  }
-
+  /* --- 1. 蒙层：高模糊度 (1.25rem) --- */
   #lightbox-overlay {
     position: fixed;
     inset: 0;
@@ -90,44 +152,74 @@ const { selector = '.markdown-content, .talk-image, .image-container' } = Astro.
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: zoom-out;
-    background: var(--lightbox-bg);
-    backdrop-filter: blur(var(--lightbox-blur)) saturate(180%);
-    -webkit-backdrop-filter: blur(var(--lightbox-blur)) saturate(180%);
-    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s;
+    background: rgba(125, 125, 125, 0.05);
+    backdrop-filter: blur(1.25rem);
+    -webkit-backdrop-filter: blur(1.25rem);
+    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.7s;
   }
 
-  .lightbox-hidden {
-    visibility: hidden;
-    opacity: 0;
-    pointer-events: none;
+  .lightbox-hidden { visibility: hidden; opacity: 0; pointer-events: none; }
+  .lightbox-visible { visibility: visible; opacity: 1; pointer-events: auto; }
+
+  /* --- 2. 按钮：圆形、全 rem、静态无交互 --- */
+  .gallery-ctrl-btn {
+    position: fixed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(125, 125, 125, 0.15);
+    border: 0.0625rem solid rgba(125, 125, 125, 0.3);
+    color: currentColor;
+    backdrop-filter: blur(0.75rem);
+    -webkit-backdrop-filter: blur(0.75rem);
+    z-index: 10000;
+    padding: 0;
+    cursor: pointer;
+    border-radius: 9999rem;
+    width: 2.8rem;
+    height: 2.8rem;
   }
 
-  .lightbox-visible {
-    visibility: visible;
-    opacity: 1;
-    pointer-events: auto;
+  .close-btn { top: 2rem; right: 2rem; }
+  .nav-btn { top: 50%; transform: translateY(-50%); }
+  .prev { left: 2rem; }
+  .next { right: 2rem; }
+
+  .gallery-ctrl-btn svg {
+    width: 1.4rem;
+    height: 1.4rem;
+    stroke-width: 0.15rem;
   }
 
+  /* --- 3. 图片：iPhone 物理动画 --- */
   #lightbox-image {
-    max-width: 90vw;
+    max-width: 85vw;
     max-height: 85vh;
     object-fit: contain;
-    border-radius: 8px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-    transform: scale(0.95);
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border-radius: 0.5rem;
+    box-shadow: 0 1.25rem 3.125rem -0.75rem rgba(0, 0, 0, 0.25);
+    user-select: none;
+    will-change: transform;
   }
 
-  .lightbox-visible #lightbox-image {
-    transform: scale(1);
+  /* --- 4. 移动端适配 (48rem) --- */
+  @media (max-width: 48rem) {
+    #lightbox-image { max-height: 70vh; margin-bottom: 5rem; }
+    .close-btn { top: 1rem; right: 1rem; width: 2.5rem; height: 2.5rem; }
+    .nav-btn { top: auto; bottom: 3.5rem; transform: none; width: 3rem; height: 3rem; }
+    .prev { left: 50%; margin-left: -4rem; }
+    .next { right: 50%; margin-right: -4rem; }
   }
 
-  /* 移动端优化 */
-  @media (max-width: 768px) {
-    #lightbox-image {
-      max-width: 95vw;
-      border-radius: 4px;
-    }
+  #lightbox-loader {
+    position: absolute;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 0.125rem solid rgba(125, 125, 125, 0.2);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
   }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loader-hidden { display: none; }
 </style>

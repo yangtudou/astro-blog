@@ -13,17 +13,21 @@ const postCollection = defineCollection({
 });
 
 const talkCollection = defineCollection({
-  loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: "./talks" }),
-  // 修改这里：增加 { image } 参数
-  schema: ({ image }) => z.object({
-    title: z.string(),
-    tag: z.string().optional(),
-    // 修改这里：使用 image() 校验器
-    cover: image(), 
-    publishDate: z.date(),
-    excerpt: z.string().optional(),
-    draft: z.boolean().optional().default(false),
+  // 使用 Content Layer API 时不能设置 type
+  loader: glob({ 
+    pattern: 'TalkList.yaml', 
+    base: "./talks" 
   }),
+  // ✅ 核心修复：定义 schema 为数组，包裹原有的对象结构
+  schema: ({ image }) => z.array(
+    z.object({
+      title: z.string(),
+      cover: image(), 
+      publishDate: z.coerce.date(), // 自动处理 YAML 中的日期字符串
+      excerpt: z.string().optional(),
+      draft: z.boolean().optional().default(false),
+    })
+  ),
 });
 
 export const collections = {

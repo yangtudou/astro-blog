@@ -1,74 +1,222 @@
 ---
-/**
- * BackToTop.astro
- * 修正层级逻辑：确保在所有背景和 Header 之上
- */
+import ToggleTheme from './ToggleTheme.astro'
 ---
 
-<button
-  id="back-to-top"
-  title="回到顶部"
-  class="fixed right-7 bottom-7 w-10 h-10 flex items-center justify-center rounded-full bg-gray-400/20 hover:bg-gray-400/40 transition-all duration-300 print:hidden opacity-0 pointer-events-none"
-  style="z-index: 999;" 
->
-  <div class="i-ri-arrow-up-line text-lg"></div>
-</button>
+<div id="float-controls" class="float-controls">
+  <div id="more-menu" class="menu-popup-container">
+    <div class="menu-content-wrapper">
+      <div class="menu-items-list">
+        <a href="/about" class="menu-item">
+          <span>关于</span>
+          <div class="i-ri:information-2-line"></div>
+        </a>
+        <a href="https://github.com/antfu" target="_blank" class="menu-item">
+          <span>GitHub</span>
+          <div class="i-uil-github-alt"></div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="buttons-capsule">
+    <div class="control-btn theme-wrapper">
+      <ToggleTheme />
+    </div>
+
+    <slot />
+
+    <div class="divider"></div>
+
+    <button id="menu-trigger" class="control-btn" title="更多">
+      <div id="menu-icon" class="i-ri:more-fill transition-all duration-500"></div>
+    </button>
+
+    <div class="divider"></div>
+
+    <button id="back-to-top" class="control-btn" title="回到顶部">
+      <div class="i-ri:arrow-up-line"></div>
+    </button>
+  </div>
+</div>
 
 <script>
-  function initBackToTop() {
-    const btn = document.getElementById('back-to-top');
-    
-    // 调试用：如果控制台没打印这个，说明脚本没加载
-    console.log('BackToTop Script Initialized');
+  function initControls() {
+    const container = document.getElementById('float-controls');
+    const bttBtn = document.getElementById('back-to-top');
+    const menuBtn = document.getElementById('menu-trigger');
+    const menuPopup = document.getElementById('more-menu');
+    const menuIcon = document.getElementById('menu-icon');
 
-    if (!btn) return;
+    if (!container || !bttBtn || !menuBtn || !menuPopup || !menuIcon) return;
 
-    const handleScroll = () => {
-      // 监控当前滚动高度
-      const scrollY = window.scrollY;
-      
-      if (scrollY > 300) {
-        // 强制移除隐藏类，确保 opacity 生效
-        btn.style.opacity = "1";
-        btn.style.pointerEvents = "auto";
-        btn.classList.remove('opacity-0', 'pointer-events-none');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 300) {
+        container.classList.add('visible');
       } else {
-        btn.style.opacity = "0";
-        btn.style.pointerEvents = "none";
-        btn.classList.add('opacity-0', 'pointer-events-none');
+        container.classList.remove('visible');
+        menuPopup.classList.remove('is-open');
+        menuIcon.setAttribute('class', 'i-ri:more-fill transition-all duration-500');
+      }
+    }, { passive: true });
+
+    bttBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    menuBtn.onclick = (e) => {
+      e.stopPropagation();
+      const isOpen = menuPopup.classList.toggle('is-open');
+      
+      // 切换图标：红色、旋转、变X
+      if (isOpen) {
+        menuIcon.setAttribute('class', 'i-ri:close-line transition-all duration-500 text-red-500 rotate-90');
+      } else {
+        menuIcon.setAttribute('class', 'i-ri:more-fill transition-all duration-500');
       }
     };
 
-    // 绑定点击事件
-    btn.onclick = (e) => {
-      e.preventDefault();
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth',
-      });
-    };
-
-    // 监听滚动
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    // 初始化位置检查
-    handleScroll();
+    document.addEventListener('click', () => {
+      menuPopup.classList.remove('is-open');
+      menuIcon.setAttribute('class', 'i-ri:more-fill transition-all duration-500');
+    });
   }
-
-  // 关键：针对 Astro 的生命周期，确保每次页面加载（包括切换）都重新运行逻辑
-  document.addEventListener('astro:page-load', initBackToTop);
-  
-  // 备用：防止部分页面没触发 astro:page-load
-  initBackToTop();
+  document.addEventListener('astro:page-load', initControls);
+  initControls();
 </script>
 
 <style>
-  #back-to-top {
-    /* 增加磨砂感，使其在 Plum 枝干上方更清晰 */
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(125, 125, 125, 0.3);
-    /* 确保即使 UnoCSS 没加载，基础样式也在 */
+  .float-controls {
+    position: fixed;
+    left: 50%;
+    bottom: 2rem;
+    transform: translateX(-50%) translateY(20px);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .float-controls.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* --- 生长动画核心逻辑 --- */
+  .menu-popup-container {
+    display: grid;
+    grid-template-rows: 0fr; /* 初始高度为 0 */
+    transition: grid-template-rows 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                opacity 0.3s ease,
+                transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+    transform-origin: bottom center;
+    width: 130px;
+  }
+
+  /* 展开状态 */
+  .menu-popup-container.is-open {
+    grid-template-rows: 1fr; /* 展开到内容的实际高度 */
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .menu-content-wrapper {
+    overflow: hidden; /* 必须设置，否则内容会溢出 */
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 0.5px solid rgba(125, 125, 125, 0.2);
+    border-radius: 1.2rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  :global(.dark) .menu-content-wrapper {
+    background: rgba(35, 35, 35, 0.75);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .menu-items-list {
+    padding: 0.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.8rem;
+    color: currentColor;
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+
+  .menu-item:hover { background: rgba(125, 125, 125, 0.1); }
+
+  /* --- 横向胶囊 --- */
+  .buttons-capsule {
+    display: flex;
+    align-items: center;
+    padding: 0.3rem 0.5rem;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 0.5px solid rgba(125, 125, 125, 0.2);
+    border-radius: 99rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  :global(.dark) .buttons-capsule {
+    background: rgba(35, 35, 35, 0.75);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  /* 基础按钮与红色X样式 */
+  :global(.control-btn) {
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
     cursor: pointer;
+    background: transparent;
+    border: none;
+    color: currentColor;
+    opacity: 0.7;
+    transition: all 0.3s;
+  }
+
+  :global(.control-btn:hover) { opacity: 1; background: rgba(125, 125, 125, 0.1); }
+  :global(.control-btn:active) { transform: scale(0.85); }
+
+  .text-red-500 { color: #ef4444 !important; opacity: 1 !important; }
+  .rotate-90 { transform: rotate(90deg); }
+
+  :global(.divider) {
+    width: 1px;
+    height: 1rem;
+    background: rgba(125, 125, 125, 0.15);
+    margin: 0 0.1rem;
+  }
+
+  .theme-wrapper :global(button) {
+    background: transparent !important;
+    border: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: currentColor !important;
   }
 </style>
