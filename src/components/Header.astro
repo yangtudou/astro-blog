@@ -2,35 +2,71 @@
 import Logo from '../components/Logo.astro'
 ---
 
-<header class="header-fixed">
+<header class="header-wrapper">
   <a href="/" class="logo-link" aria-label="Home">
     <Logo />
   </a>
 </header>
 
 <style>
-  .header-fixed {
-    position: fixed;
+  .header-wrapper {
+    position: sticky;
     top: 0;
     left: 0;
+    right: 0;
     width: 100%;
     z-index: 100;
-    pointer-events: none;
+    
+    /* 初始高度，由 JS 动态控制 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    transition: none;
+    will-change: height;
   }
 
   .logo-link {
     display: block;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-top: 1.75rem;
-    opacity: 0.6;
-    transition: all 0.4s ease;
-    pointer-events: auto;
-  }
-
-  .logo-link:hover {
-    opacity: 1;
-    transform: translateX(-50%) scale(1.1);
+    
+    /* 由 JS 动态控制缩放 */
+    transition: none;
+    will-change: transform;
   }
 </style>
+
+<script>
+  function initHeader() {
+    const header = document.querySelector('.header-wrapper');
+    const logo = document.querySelector('.logo-link');
+    if (!header || !logo) return;
+
+    // 配置参数
+    const START_HEIGHT = 200;     // 初始高度 (px)
+    const END_HEIGHT = 72;        // 最终高度 (px) 4.5rem
+    const START_SCALE = 2;        // Logo 初始缩放
+    const END_SCALE = 1;          // Logo 最终缩放
+    const SCROLL_RANGE = 200;     // 动画完成需要的滚动距离 (px)
+
+    const handleScroll = () => {
+      const scrollY = window.scrollY;
+      
+      // 计算进度 (0-1 之间)
+      const progress = Math.min(scrollY / SCROLL_RANGE, 1);
+      
+      // 线性插值：Header 高度
+      const currentHeight = START_HEIGHT - (START_HEIGHT - END_HEIGHT) * progress;
+      header.style.height = `${currentHeight}px`;
+      
+      // 线性插值：Logo 缩放
+      const currentScale = START_SCALE - (START_SCALE - END_SCALE) * progress;
+      logo.style.transform = `scale(${currentScale})`;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // 初始化
+  }
+
+  document.addEventListener('astro:page-load', initHeader);
+  initHeader();
+</script>
