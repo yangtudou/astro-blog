@@ -2,7 +2,8 @@
 import { getCollection } from 'astro:content'
 import { Image } from 'astro:assets'
 import ImageGallery from '../components/ImageGallery.astro';
-import BackToTop from './BackToTop.astro';
+// import BackToTop from './BackToTop.astro';
+import SmartFloatControl from './SmartFloatControl.astro'
 
 const allTalksEntries = await getCollection('talk');
 const allTalksList = allTalksEntries
@@ -52,12 +53,13 @@ function formatDate(date: Date | string) {
   </div>
 </div>
 
-<BackToTop>
+<SmartFloatControl />
+<!-- <BackToTop>
   <div class="divider"></div>
   <button id="float-ratio-toggle" class="control-btn" title="切换视图比例">
     <div class="i-ri:layout-grid-line"></div>
   </button>
-</BackToTop>
+</BackToTop> -->
 
 <script>
   function initTalkToggle() {

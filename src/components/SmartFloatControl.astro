@@ -1,0 +1,220 @@
+---
+interface Props {
+  pageType?: 'home' | 'posts' | 'post' | 'talk' | 'gallery' | 'default';
+}
+
+const { pageType = 'default' } = Astro.props;
+---
+
+<div id="float-controls" class="float-controls" data-page-type={pageType}>
+  <div class="buttons-capsule" id="main-island">
+    
+    <div class="expand-wrapper" id="expand-wrapper">
+      <div class="expanded-content">
+        <div class="inner-menu-list">
+          <a href="/" class="menu-item"><span>首页</span><div class="i-ri-home-5-line"></div></a>
+          <a href="/posts" class="menu-item"><span>文章</span><div class="i-ri-article-line"></div></a>
+          <a href="/about" class="menu-item"><span>关于</span><div class="i-ri-user-3-line"></div></a>
+          <a href="https://github.com/antfu" target="_blank" class="menu-item"><span>GitHub</span><div class="i-ri-github-line"></div></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="capsule-dock" id="capsule-dock">
+      <button id="expand-trigger" class="island-btn" title="更多">
+        <div class="i-ri-more-fill scale-90 opacity-70"></div>
+      </button>
+
+      <div id="dynamic-slot" class="dynamic-slot" style="display: none;">
+        <div class="v-line"></div>
+        <button id="dynamic-action" class="island-btn">
+          <div id="dynamic-icon"></div>
+        </button>
+      </div>
+
+      <div class="v-line"></div>
+
+      <button id="to-top-trigger" class="island-btn" title="回顶">
+        <div class="i-ri-arrow-up-line scale-85 opacity-70"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function initLiquidIsland() {
+    const island = document.getElementById('main-island');
+    const container = document.getElementById('float-controls');
+    const expandBtn = document.getElementById('expand-trigger');
+    
+    if (!island || !expandBtn || !container) return;
+
+    let isExpanded = false;
+
+    const toggleMenu = (expand) => {
+      isExpanded = expand;
+      island.classList.toggle('is-expanded', expand);
+    };
+
+    expandBtn.onclick = (e) => {
+      e.stopPropagation();
+      toggleMenu(!isExpanded);
+    };
+
+    document.addEventListener('click', (e) => {
+      if (isExpanded && !island.contains(e.target)) toggleMenu(false);
+    });
+
+    window.addEventListener('scroll', () => {
+      const isVisible = window.scrollY > 300;
+      container.classList.toggle('visible', isVisible);
+      if (isExpanded) toggleMenu(false);
+    }, { passive: true });
+
+    document.getElementById('to-top-trigger').onclick = (e) => {
+      e.stopPropagation();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+  }
+
+  document.addEventListener('astro:page-load', initLiquidIsland);
+  initLiquidIsland();
+</script>
+
+<style>
+  :root {
+    --ios-ease: cubic-bezier(0.3, 1.4, 0.2, 1);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --text-color: #1d1d1f;
+    --dock-h: 44px; /* 默认高度降低 */
+  }
+
+  :global(.dark) {
+    --glass-bg: rgba(28, 28, 30, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.05);
+    --text-color: #f5f5f7;
+  }
+
+  .float-controls {
+    position: fixed;
+    left: 50%;
+    bottom: 1.5rem; /* 稍微下移，降低画面侵略性 */
+    transform: translateX(-50%) translateY(80px);
+    z-index: 10000;
+    opacity: 0;
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .float-controls.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ========== 极致微缩胶囊 ========== */
+  .buttons-capsule {
+    position: relative;
+    width: 115px; /* 进一步压缩宽度 */
+    background: var(--glass-bg);
+    backdrop-filter: blur(30px) saturate(210%);
+    -webkit-backdrop-filter: blur(30px) saturate(210%);
+    border: 0.5px solid var(--glass-border);
+    border-radius: 22px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    transition: 
+      width 0.4s var(--ios-ease), 
+      border-radius 0.4s var(--ios-ease), 
+      transform 0.4s var(--ios-ease);
+    overflow: hidden;
+    transform-origin: bottom center;
+  }
+
+  .buttons-capsule.is-expanded {
+    width: 165px; /* 展开宽度更紧凑 */
+    border-radius: 24px;
+    transform: translateX(0) translateY(-6px);
+  }
+
+  .expand-wrapper {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.4s var(--ios-ease);
+  }
+
+  .is-expanded .expand-wrapper {
+    grid-template-rows: 1fr;
+  }
+
+  .expanded-content {
+    overflow: hidden;
+    padding: 0 0.8rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease, transform 0.4s var(--ios-ease);
+  }
+
+  .is-expanded .expanded-content {
+    opacity: 1;
+    transform: translateY(0);
+    padding-top: 1rem;
+    padding-bottom: 0.3rem;
+    transition-delay: 0.05s;
+  }
+
+  .inner-menu-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.6rem;
+    color: var(--text-color);
+    opacity: 0.6;
+    text-decoration: none;
+    font-size: 0.85rem; /* 字号进一步缩小 */
+    font-weight: 500;
+    border-radius: 8px;
+    transition: opacity 0.2s ease;
+  }
+
+  .menu-item:hover { opacity: 1; }
+
+  /* Dock 基座 */
+  .capsule-dock {
+    height: var(--dock-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 0 0.2rem;
+  }
+
+  .island-btn {
+    width: 1.8rem; /* 按钮极致缩小 */
+    height: 1.8rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: var(--text-color);
+    font-size: 1rem; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .island-btn:active { transform: scale(0.8); }
+  .v-line { width: 0.5px; height: 0.8rem; background: rgba(125, 125, 125, 0.1); }
+
+  /* ========== 手机端极端压缩适配 ========== */
+  @media (max-width: 768px) {
+    :root { --dock-h: 40px; } /* 物理高度只有 40px */
+    .float-controls { bottom: 1.2rem; }
+    .buttons-capsule { width: 105px; border-radius: 20px; }
+    .buttons-capsule.is-expanded { width: 155px; }
+    .menu-item { font-size: 0.8rem; padding: 0.45rem 0.5rem; }
+  }
+</style>
