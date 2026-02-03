@@ -25,65 +25,46 @@ const { title = 'y3say', description } = Astro.props
     <script is:inline>
       ;(function () {
         const html = document.documentElement;
-        
-        // 核心逻辑：获取最终应应用的状态
         const getResolvedTheme = () => {
           const stored = localStorage.getItem('theme');
           const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          
-          // 如果本地存储是 'auto' 或者根本没有存储过，直接返回系统偏好
-          if (!stored || stored === 'auto') {
-            return systemDark ? 'dark' : 'light';
-          }
-          
-          // 如果有手动选择（dark/light），则遵循手动选择
+          if (!stored || stored === 'auto') return systemDark ? 'dark' : 'light';
           return stored;
         };
-
         const updateTheme = () => {
           const theme = getResolvedTheme();
-          const isDark = theme === 'dark';
-          html.classList.toggle('dark', isDark);
-          
-          // 触发事件通知 Logo 等组件
-          window.dispatchEvent(new CustomEvent('theme-changed', { 
-            detail: { theme, isDark } 
-          }));
+          html.classList.toggle('dark', theme === 'dark');
         };
-
-        // 1. 立即初始化
         updateTheme();
-
-        // 2. 🔑 关键：实时监听设备系统深色模式的变化
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-          // 当系统模式切换时，我们认为系统偏好具有“强制性”
-          // 此时清除 localStorage，让网页重新回归“跟随系统”状态
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
           localStorage.removeItem('theme'); 
           updateTheme();
         });
-
-        // 3. 监听手动切换（适配 ToggleTheme.astro）
-        const observer = new MutationObserver((mutations) => {
-          mutations.forEach((mutation) => {
-            if (mutation.attributeName === 'class') {
-              const isDark = html.classList.contains('dark');
-              window.dispatchEvent(new CustomEvent('theme-changed', { 
-                detail: { theme: isDark ? 'dark' : 'light', isDark } 
-              }));
-            }
-          });
-        });
-        observer.observe(html, { attributes: true });
       })()
     </script>
   </head>
 
-  <body class="font-sans text-gray-700 dark:text-gray-200 relative min-h-screen bg-white dark:bg-black transition-colors duration-500">
+  <body class="font-sans text-gray-7 dark:text-gray-2 bg-white dark:bg-black transition-colors duration-500 relative min-h-screen flex flex-col items-center">
+    
     <Header />
-    <main class="mx-7 md:mx-auto md:max-w-3xl w-auto pb-10">
+
+    <main class="flex-1 w-full max-w-1440px px-7 md:px-15 box-border pb-10">
       <slot />
     </main>
+
     <Footer />
     <BackToTop />
+
+    <style is:global>
+      /* 🔑 解决闪烁的神器：强制保留滚动条占位 */
+      html {
+        scrollbar-gutter: stable;
+      }
+
+      /* 当 ImageGallery 激活时，防止底层滚动 */
+      body.overflow-hidden {
+        overflow: hidden;
+      }
+    </style>
   </body>
 </html>

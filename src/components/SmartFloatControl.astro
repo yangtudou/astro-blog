@@ -1,11 +1,11 @@
 ---
-// 删除了 Props 和 pageType 逻辑，使组件更轻量
+// SmartFloatControl.astro
 ---
 
 <div id="float-controls" class="float-controls-container">
   <div class="left-action">
     <div class="buttons-capsule" id="main-island">
-      <div class="specular-shine" id="specular"></div>
+      <div class="glass-gloss-layer"></div>
       
       <div class="expand-wrapper">
         <div class="expanded-content">
@@ -25,12 +25,6 @@
       </div>
     </div>
   </div>
-
-  <div class="right-action">
-    <button id="to-top-trigger" class="round-btn visible-logic" title="回顶">
-      <div class="i-ri-arrow-up-line"></div>
-    </button>
-  </div>
 </div>
 
 <script>
@@ -38,69 +32,26 @@
     const island = document.getElementById('main-island');
     const triggerContainer = document.getElementById('trigger-container');
     const expandBtn = document.getElementById('expand-trigger');
-    const toTopBtn = document.getElementById('to-top-trigger');
-    const specular = document.getElementById('specular');
     const menuItems = document.querySelectorAll('.menu-item');
-
-    if (!island || !expandBtn || !toTopBtn || !triggerContainer || !specular) return;
+    if (!island || !expandBtn || !triggerContainer) return;
 
     let isExpanded = false;
-    let mouseX = 0, mouseY = 0;
-    let smoothX = 0, smoothY = 0;
-
-    // 1. 物理引擎：光影位置插值 (YTAnimation 核心)
-    window.addEventListener('mousemove', (e) => {
-      mouseX = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
-      mouseY = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
-    });
-
-    function render() {
-      smoothX += (mouseX - smoothX) * 0.1;
-      smoothY += (mouseY - smoothY) * 0.1;
-      island!.style.transform = `perspective(1000px) rotateX(${-smoothY * 5}deg) rotateY(${smoothX * 5}deg)`;
-      specular!.style.transform = `translate(${smoothX * 25}px, ${smoothY * 25}px)`;
-      requestAnimationFrame(render);
-    }
-    render();
-
-    // 2. 交互动效：弹开后隐藏三元点
     const toggleMenu = (expand: boolean) => {
       isExpanded = expand;
       island.classList.toggle('is-expanded', expand);
-      
       triggerContainer.style.opacity = expand ? '0' : '1';
-      triggerContainer.style.transform = expand ? 'scale(0.5) translateY(10px)' : 'scale(1) translateY(0)';
+      triggerContainer.style.transform = expand ? 'scale(0.6) translateY(10px)' : 'scale(1) translateY(0)';
       triggerContainer.style.pointerEvents = expand ? 'none' : 'auto';
-
       menuItems.forEach((item, index) => {
-        const el = item as HTMLElement;
-        el.style.transitionDelay = expand ? `${index * 50 + 120}ms` : '0ms';
+        (item as HTMLElement).style.transitionDelay = expand ? `${index * 50 + 120}ms` : '0ms';
       });
     };
 
-    expandBtn.onclick = (e) => {
-      e.stopPropagation();
-      toggleMenu(true);
-    };
-
+    expandBtn.onclick = (e) => { e.stopPropagation(); toggleMenu(true); };
     document.addEventListener('click', (e) => {
-      const target = e.target as Node;
-      if (isExpanded && !island.contains(target)) {
-        toggleMenu(false);
-      }
+      if (isExpanded && !island.contains(e.target as Node)) toggleMenu(false);
     });
-
-    toTopBtn.onclick = () => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    window.addEventListener('scroll', () => {
-      const show = window.scrollY > 300;
-      document.querySelectorAll('.visible-logic').forEach(el => {
-        el.classList.toggle('show', show);
-      });
-      if (isExpanded) toggleMenu(false);
-    }, { passive: true });
+    window.addEventListener('scroll', () => { if (isExpanded) toggleMenu(false); }, { passive: true });
   }
 
   document.addEventListener('astro:page-load', initLiquidLayout);
@@ -129,16 +80,14 @@
     z-index: 10000;
   }
 
-  .left-action, .right-action {
+  .left-action {
     position: absolute;
     bottom: 1.5rem;
+    /* 🔑 关键修改：对齐 md:px-15 (3.75rem) */
+    left: 3.75rem; 
     pointer-events: auto;
   }
 
-  .left-action { left: 1.5rem; }
-  .right-action { right: 1.5rem; }
-
-  /* ========== 液态功能岛 ========== */
   .buttons-capsule {
     position: relative;
     width: var(--btn-size);
@@ -149,28 +98,17 @@
     border: 0.5px solid var(--glass-border);
     border-radius: 50%;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-    transition: 
-      width 0.6s var(--spring-ease), 
-      height 0.6s var(--spring-ease),
-      border-radius 0.6s var(--spring-ease),
-      transform 0.5s var(--spring-ease);
+    transition: width 0.6s var(--spring-ease), height 0.6s var(--spring-ease), border-radius 0.6s var(--spring-ease), transform 0.5s var(--spring-ease);
     overflow: hidden;
-    transform-origin: bottom left;
+    /* 🔑 关键修改：固定变换原点在左下角，确保向上弹开 */
+    transform-origin: bottom left; 
   }
 
   .buttons-capsule.is-expanded {
-    width: 150px;
+    width: 140px;
     height: auto;
-    border-radius: 24px;
-    transform: scale(1.02) translateY(-5px);
-  }
-
-  .specular-shine {
-    position: absolute;
-    top: -50%; left: -50%; width: 200%; height: 200%;
-    background: radial-gradient(circle at center, rgba(255, 255, 255, 0.4) 0%, transparent 35%);
-    mix-blend-mode: overlay;
-    pointer-events: none;
+    border-radius: 20px;
+    transform: translateY(-5px);
   }
 
   .expand-wrapper {
@@ -180,14 +118,12 @@
   }
 
   .is-expanded .expand-wrapper { grid-template-rows: 1fr; }
-
   .expanded-content { overflow: hidden; }
 
   .inner-menu-list {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
-    padding: 0.8rem 0.6rem;
+    padding: 0.8rem 0.5rem;
   }
 
   .menu-item {
@@ -199,8 +135,6 @@
     text-decoration: none;
     font-size: 0.85rem;
     font-weight: 600;
-    border-radius: 14px;
-    background: rgba(255, 255, 255, 0.05);
     transform: translateY(20px);
     opacity: 0;
     transition: transform 0.6s var(--spring-ease), opacity 0.4s ease;
@@ -211,13 +145,15 @@
     opacity: 1;
   }
 
+  .menu-item:hover { transform: translateX(5px); }
+
   .capsule-dock {
     position: absolute;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.4s var(--spring-ease);
+    z-index: 2;
   }
 
   .island-btn-main {
@@ -232,36 +168,12 @@
     justify-content: center;
   }
 
-  /* ========== 右侧：回顶岛 ========== */
-  .round-btn {
-    width: var(--btn-size);
-    height: var(--btn-size);
-    border-radius: 50%;
-    background: var(--glass-bg);
-    backdrop-filter: blur(40px) saturate(210%);
-    -webkit-backdrop-filter: blur(40px) saturate(210%);
-    border: 0.5px solid var(--glass-border);
-    color: var(--text-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-    transform: translateY(100px);
-    opacity: 0;
-    transition: all 0.6s var(--spring-ease);
-  }
-
-  .round-btn.show {
-    transform: translateY(0);
-    opacity: 1;
-  }
-
-  .round-btn:active { transform: scale(0.85); }
-
+  /* 🔑 适配 UnoCSS px-7 (1.75rem) */
   @media (max-width: 768px) {
     :root { --btn-size: 40px; }
-    .left-action { left: 1rem; }
-    .right-action { right: 1rem; }
+    .left-action { 
+      left: 1.75rem; 
+      bottom: 1.2rem; 
+    }
   }
 </style>

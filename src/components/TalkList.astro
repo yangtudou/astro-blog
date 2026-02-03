@@ -2,7 +2,6 @@
 import { getCollection } from 'astro:content'
 import { Image } from 'astro:assets'
 import ImageGallery from '../components/ImageGallery.astro';
-// import BackToTop from './BackToTop.astro';
 import SmartFloatControl from './SmartFloatControl.astro'
 
 const allTalksEntries = await getCollection('talk');
@@ -22,7 +21,7 @@ function formatDate(date: Date | string) {
 
 <ImageGallery selector=".talk-image-box" />
 
-<div class="talk-list">
+<div class="talk-list w-full mt-10">
   <div class="talks-grid">
     {allTalksList.map((talk, idx) => (
       <div class="talk-item slide-enter" style={`--enter-stage: ${idx + 1}; --enter-step: 100ms;`}>
@@ -54,18 +53,11 @@ function formatDate(date: Date | string) {
 </div>
 
 <SmartFloatControl />
-<!-- <BackToTop>
-  <div class="divider"></div>
-  <button id="float-ratio-toggle" class="control-btn" title="切换视图比例">
-    <div class="i-ri:layout-grid-line"></div>
-  </button>
-</BackToTop> -->
 
 <script>
   function initTalkToggle() {
     const btnFloat = document.getElementById('float-ratio-toggle');
     const boxes = document.querySelectorAll('.talk-image-box');
-    
     if (!boxes.length) return;
 
     const performToggle = () => {
@@ -82,32 +74,37 @@ function formatDate(date: Date | string) {
 </script>
 
 <style>
-  /* --- 自动填充大图布局 --- */
+  /* --- 响应式网格核心逻辑 --- */
   .talk-list {
-    width: 100vw;
-    position: relative;
-    left: 50%;
-    right: 50%;
-    margin-left: -50vw;
-    margin-right: -50vw;
-    padding: 0 1.5rem; 
+    width: 100%;
     box-sizing: border-box;
-    padding-top: 0rem; /* 补偿删除 header 后的顶部间距 */
   }
 
   .talks-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 2.5rem 1.2rem;
+    /* 🔑 自动伸缩算法：
+       使用 1fr 确保卡片平分剩余空间，填充 BaseLayout 的宽度。
+       在 1440px 的容器下，会自动呈现 4 列效果。
+    */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 3rem 1.5rem;
   }
 
-  @media (max-width: 360px) {
+  /* 针对平板和手机的微调 */
+  @media (max-width: 768px) {
     .talks-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 2rem 1rem;
     }
   }
 
-  /* --- 卡片内容 --- */
+  @media (max-width: 480px) {
+    .talks-grid {
+      grid-template-columns: 1fr; /* 移动端单列铺满 */
+    }
+  }
+
+  /* --- 内容卡片样式 --- */
   .talk-container { 
     display: flex;
     flex-direction: column; 
@@ -118,7 +115,7 @@ function formatDate(date: Date | string) {
     display: flex; 
     justify-content: space-between; 
     align-items: baseline;
-    margin-bottom: 0.5rem; 
+    margin-bottom: 0.6rem; 
   }
 
   .talk-title { 
@@ -129,6 +126,7 @@ function formatDate(date: Date | string) {
     text-overflow: ellipsis;
     padding-right: 8px;
   }
+
   .talk-date { 
     font-size: 0.7rem; 
     font-family: monospace; 
@@ -141,6 +139,7 @@ function formatDate(date: Date | string) {
     overflow: hidden;
     background-color: transparent;
     cursor: zoom-in;
+    /* 比例切换动画过渡  */
     transition: aspect-ratio 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -154,26 +153,28 @@ function formatDate(date: Date | string) {
     object-position: center;
   }
 
-  .talk-bottom-row { margin-top: 0.8rem; }
+  .talk-bottom-row { margin-top: 1rem; }
   .talk-excerpt { 
-    font-size: 0.95rem; 
+    font-size: 0.95rem;
     line-height: 1.6; 
     opacity: 0.7;
     text-align: left; 
     margin: 0;
+    /* 限制行数防止长短不一破坏美感 */
     display: -webkit-box;
     -webkit-line-clamp: 4;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  /* 入场动画 */
+  /* --- 入场动画 --- */
   .slide-enter {
     animation: slide-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    animation-delay: calc(var(--enter-stage) * 40ms);
+    animation-delay: calc(var(--enter-stage) * 50ms);
   }
+
   @keyframes slide-up {
-    from { opacity: 0; transform: translateY(12px); }
+    from { opacity: 0; transform: translateY(15px); }
     to { opacity: 1; transform: translateY(0); }
   }
 </style>

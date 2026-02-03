@@ -3,154 +3,158 @@ interface Props {
   selector?: string;
 }
 
-const { selector = '.markdown-content, .talk-image, .image-container, .talk-image-box' } = Astro.props;
+const { selector = '.talk-image-box' } = Astro.props;
 ---
 
 <div id="lightbox-overlay" class="lightbox-hidden" aria-hidden="true">
-  <button id="lightbox-prev" class="gallery-ctrl-btn nav-btn prev" title="上一张">
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-  </button>
-  
-  <div class="lightbox-wrapper">
+  <div class="lightbox-wrapper" id="lightbox-wrapper">
     <div id="lightbox-loader" class="loader-hidden"></div>
-    <button id="lightbox-close" class="gallery-ctrl-btn close-btn" title="关闭">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-    </button>
     <img id="lightbox-image" src="" alt="预览图片" />
   </div>
-
-  <button id="lightbox-next" class="gallery-ctrl-btn nav-btn next" title="下一张">
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-  </button>
 </div>
 
 <script define:vars={{ selector }}>
   function initGallery() {
     const overlay = document.getElementById('lightbox-overlay');
     const lightboxImg = document.getElementById('lightbox-image');
-    const loader = document.getElementById('lightbox-loader');
-    const btnPrev = document.getElementById('lightbox-prev');
-    const btnNext = document.getElementById('lightbox-next');
-    const btnClose = document.getElementById('lightbox-close');
+    const wrapper = document.getElementById('lightbox-wrapper');
 
     if (!overlay || !lightboxImg) return;
 
     let currentIndex = -1;
     let galleryImages = [];
     let lastActiveImg = null;
-    let touchStartY = 0;
+    let isAnimating = false;
 
-    const updateGalleryList = () => {
+    // 🔑 锁定背景滚动
+    const lockScroll = () => {
+      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+    };
+
+    const unlockScroll = () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+      document.body.style.touchAction = '';
+    };
+
+    const updateGallery = () => {
       const allImgs = Array.from(document.querySelectorAll(`${selector} img`));
       galleryImages = allImgs.filter(img => img.naturalWidth > 150);
     };
 
-    const getTransformToTarget = (rect) => {
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      const translateX = centerX - window.innerWidth / 2;
-      const translateY = centerY - window.innerHeight / 2;
-      const scale = rect.width / (window.innerWidth * 0.85); 
-      return `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+    // 🔑 计算从原位弹出的果冻动画
+    const animateFromRect = (rect, targetImg) => {
+      const scale = rect.width / (window.innerWidth * 0.85);
+      const translateX = (rect.left + rect.width / 2) - window.innerWidth / 2;
+      const translateY = (rect.top + rect.height / 2) - window.innerHeight / 2;
+
+      // 初始位置设定在缩略图处
+      lightboxImg.style.transition = 'none';
+      lightboxImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+      lightboxImg.style.opacity = '0';
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          // 🔑 模拟 iOS 的弹性 Bezier：快速冲出，带有微弱回弹感
+          lightboxImg.style.transition = 'transform 0.7s cubic-bezier(0.2, 1.2, 0.2, 1), opacity 0.4s ease';
+          lightboxImg.style.transform = 'translate(0, 0) scale(1)';
+          lightboxImg.style.opacity = '1';
+        });
+      });
     };
 
-    const showImage = (index, isOpening = false) => {
-      if (index < 0 || index >= galleryImages.length) return;
+    const showImage = (index, direction = 0) => {
+      if (isAnimating || index < 0 || index >= galleryImages.length) return;
+      isAnimating = true;
+      
+      const prevIndex = currentIndex;
       currentIndex = index;
-      lastActiveImg = galleryImages[currentIndex];
-      const target = lastActiveImg;
+      lastActiveImg = galleryImages[index];
 
-      loader.classList.remove('loader-hidden');
+      if (prevIndex === -1) {
+        // 第一次打开：从位置弹出
+        lightboxImg.src = lastActiveImg.src;
+        animateFromRect(lastActiveImg.getBoundingClientRect());
+        setTimeout(() => isAnimating = false, 700);
+      } else {
+        // 🔑 切换时的果冻感：旧图滑出，新图弹性滑入
+        const offset = direction * 50;
+        lightboxImg.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease';
+        lightboxImg.style.transform = `translateX(${-offset}px) scale(0.95)`;
+        lightboxImg.style.opacity = '0';
 
-      const tempImg = new Image();
-      tempImg.src = target.src;
-      tempImg.onload = () => {
-        lightboxImg.src = target.src;
-        lightboxImg.alt = target.alt || '预览图片';
-        if (isOpening) {
-          const rect = target.getBoundingClientRect();
+        setTimeout(() => {
+          lightboxImg.src = lastActiveImg.src;
           lightboxImg.style.transition = 'none';
-          lightboxImg.style.transform = getTransformToTarget(rect);
-          lightboxImg.style.opacity = '1';
+          lightboxImg.style.transform = `translateX(${offset}px) scale(0.95)`;
           
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-              lightboxImg.style.transition = 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease-out';
-              lightboxImg.style.transform = 'translate(0, 0) scale(1)';
+              lightboxImg.style.transition = 'transform 0.6s cubic-bezier(0.2, 1.2, 0.2, 1), opacity 0.4s ease';
+              lightboxImg.style.transform = 'translateX(0) scale(1)';
+              lightboxImg.style.opacity = '1';
+              setTimeout(() => isAnimating = false, 600);
             });
           });
-        }
-        loader.classList.add('loader-hidden');
-      };
-
-      const isMultiple = galleryImages.length > 1;
-      btnPrev.style.display = isMultiple ? 'flex' : 'none';
-      btnNext.style.display = isMultiple ? 'flex' : 'none';
+        }, 300);
+      }
     };
 
     const close = () => {
-      if (lastActiveImg) {
-        const rect = lastActiveImg.getBoundingClientRect();
-        lightboxImg.style.transition = 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)';
-        lightboxImg.style.transform = getTransformToTarget(rect);
-      }
-      
+      if (!lastActiveImg) return;
+      const rect = lastActiveImg.getBoundingClientRect();
+      const scale = rect.width / (window.innerWidth * 0.85);
+      const translateX = (rect.left + rect.width / 2) - window.innerWidth / 2;
+      const translateY = (rect.top + rect.height / 2) - window.innerHeight / 2;
+
+      lightboxImg.style.transition = 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease';
+      lightboxImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+      lightboxImg.style.opacity = '0';
       overlay.style.opacity = '0';
-      setTimeout(() => { 
-        overlay.classList.remove('lightbox-visible');
-        overlay.classList.add('lightbox-hidden');
+
+      setTimeout(() => {
+        overlay.classList.replace('lightbox-visible', 'lightbox-hidden');
         overlay.style.opacity = '';
-        document.body.style.overflow = '';
-        lightboxImg.src = '';
-      }, 700);
+        unlockScroll();
+        currentIndex = -1;
+      }, 500);
     };
 
-    overlay.onclick = (e) => {
-      if (e.target === lightboxImg || e.target.closest('.gallery-ctrl-btn')) return;
-      close();
-    };
-
-    overlay.addEventListener('touchstart', (e) => {
-      touchStartY = e.touches[0].clientY;
-    }, { passive: true });
-
-    overlay.addEventListener('touchmove', (e) => {
-      if (!touchStartY) return;
-      const touchMoveY = e.touches[0].clientY;
-      const deltaY = touchMoveY - touchStartY;
-
-      if (Math.abs(deltaY) > 100) {
-        close();
-        touchStartY = 0;
+    // 🔑 滚轮与手势监听
+    overlay.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      if (isAnimating) return;
+      if (Math.abs(e.deltaX) > 30 || Math.abs(e.deltaY) > 30) {
+        showImage(currentIndex + (e.deltaX > 0 || e.deltaY > 0 ? 1 : -1), e.deltaX > 0 || e.deltaY > 0 ? 1 : -1);
       }
-    }, { passive: true });
+    }, { passive: false });
 
-    const handleImageClick = (e) => {
+    let startX = 0;
+    overlay.addEventListener('touchstart', e => startX = e.touches[0].clientX, {passive: true});
+    overlay.addEventListener('touchend', e => {
+      const diff = e.changedTouches[0].clientX - startX;
+      if (Math.abs(diff) > 60) {
+        showImage(currentIndex + (diff > 0 ? -1 : 1), diff > 0 ? -1 : 1);
+      } else if (Math.abs(diff) < 5) {
+        close();
+      }
+    }, {passive: true});
+
+    overlay.onclick = (e) => { if(e.pointerType === 'mouse') close(); };
+
+    document.addEventListener('click', (e) => {
       const target = e.target;
-      if (!(target instanceof HTMLImageElement)) return;
-      if (target.closest(selector) && target.naturalWidth > 150) {
-        e.preventDefault();
-        updateGalleryList();
+      if (target instanceof HTMLImageElement && target.closest(selector)) {
+        updateGallery();
         const index = galleryImages.indexOf(target);
         if (index !== -1) {
-          overlay.classList.remove('lightbox-hidden');
-          overlay.classList.add('lightbox-visible');
-          document.body.style.overflow = 'hidden';
-          showImage(index, true);
+          overlay.classList.replace('lightbox-hidden', 'lightbox-visible');
+          lockScroll();
+          showImage(index);
         }
       }
-    };
-
-    document.addEventListener('click', handleImageClick);
-    btnClose.onclick = (e) => { e.stopPropagation(); close(); };
-    btnPrev.onclick = (e) => { e.stopPropagation(); if (currentIndex > 0) showImage(currentIndex - 1); };
-    btnNext.onclick = (e) => { e.stopPropagation(); if (currentIndex < galleryImages.length - 1) showImage(currentIndex + 1); };
-
-    document.addEventListener('keydown', (e) => {
-      if (!overlay.classList.contains('lightbox-visible')) return;
-      if (e.key === 'Escape') close();
-      if (e.key === 'ArrowLeft') btnPrev.click();
-      if (e.key === 'ArrowRight') btnNext.click();
     });
   }
 
@@ -166,84 +170,37 @@ const { selector = '.markdown-content, .talk-image, .image-container, .talk-imag
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(125, 125, 125, 0.05);
-    backdrop-filter: blur(1.25rem);
-    -webkit-backdrop-filter: blur(1.25rem);
-    transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.7s;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(50px) saturate(210%);
+    -webkit-backdrop-filter: blur(50px) saturate(210%);
+    transition: opacity 0.4s ease;
+    touch-action: none;
+    cursor: zoom-out;
   }
+
+  :global(.dark) #lightbox-overlay { background: rgba(0, 0, 0, 0.85); }
 
   .lightbox-hidden { visibility: hidden; opacity: 0; pointer-events: none; }
   .lightbox-visible { visibility: visible; opacity: 1; pointer-events: auto; }
 
-  /* 核心修改：图片包裹层 */
   .lightbox-wrapper {
-    position: relative;
+    width: 85vw;
+    height: 85vh;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    max-width: 85vw;
-    max-height: 85vh;
-  }
-
-  .gallery-ctrl-btn {
-    display: flex;
-    align-items: center;
     justify-content: center;
-    background: rgba(125, 125, 125, 0.15);
-    border: 0.0625rem solid rgba(125, 125, 125, 0.3);
-    color: currentColor;
-    backdrop-filter: blur(0.75rem);
-    -webkit-backdrop-filter: blur(0.75rem);
-    z-index: 10000;
-    cursor: pointer;
-    border-radius: 9999rem;
-    width: 2.8rem;
-    height: 2.8rem;
-    transition: opacity 0.3s;
-  }
-
-  /* 核心修改：关闭按钮现在相对于 .lightbox-wrapper 定位 */
-  .close-btn { 
-    position: absolute;
-    top: -3.5rem; /* 位于图片上方 */
-    right: 0;     /* 严格对齐容器（图片）右侧 */
-  }
-
-  .nav-btn { position: fixed; top: 50%; transform: translateY(-50%); }
-  .prev { left: 2rem; }
-  .next { right: 2rem; }
-
-  @media (max-width: 48rem) {
-    .close-btn { top: -3.2rem; right: 0; width: 2.5rem; height: 2.5rem; }
-    .nav-btn { top: auto; bottom: 3.5rem; transform: none; width: 3rem; height: 3rem; }
-    .prev { left: 50%; margin-left: -4rem; }
-    .next { right: 50%; margin-right: -4rem; }
+    align-items: center;
+    pointer-events: none;
   }
 
   #lightbox-image {
-    width: 100%;
-    height: 100%;
-    max-width: 85vw;
-    max-height: 85vh;
+    max-width: 100%;
+    max-height: 100%;
     object-fit: contain;
-    border-radius: 0.5rem;
-    box-shadow: 0 1.25rem 3.125rem -0.75rem rgba(0, 0, 0, 0.25);
-    user-select: none;
-    will-change: transform;
+    border-radius: 4px;
+    /* 🔑 柔和的阴影，增加悬浮感 */
+    box-shadow: 0 40px 100px rgba(0,0,0,0.1);
+    will-change: transform, opacity;
   }
 
-  #lightbox-loader {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 2.5rem;
-    height: 2.5rem;
-    border: 0.125rem solid rgba(125, 125, 125, 0.2);
-    border-top-color: currentColor;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
   .loader-hidden { display: none; }
 </style>

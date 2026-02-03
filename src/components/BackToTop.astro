@@ -1,262 +1,81 @@
 ---
-import ToggleTheme from './ToggleTheme.astro'
+// BackToTop.astro
 ---
 
-<div id="float-controls" class="float-controls">
-  <div id="more-menu" class="menu-popup-container">
-    <div class="menu-content-wrapper">
-      <div class="menu-items-list">
-        <a href="/" class="menu-item">
-          <span>首页</span>
-          <div class="i-ri:home-5-line"></div>
-        </a>
-        <a href="/posts" class="menu-item">
-          <span>文章</span>
-          <div class="i-ri:article-line"></div>
-        </a>
-        <a href="/about" class="menu-item">
-          <span>关于</span>
-          <div class="i-ri:user-3-line"></div>
-        </a>
-        <a href="https://github.com/antfu" target="_blank" class="menu-item">
-          <span>GitHub</span>
-          <div class="i-ri:github-line"></div>
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <div class="buttons-capsule">
-    <div class="control-btn theme-wrapper">
-      <ToggleTheme />
-    </div>
-
-    <slot />
-
-    <div class="divider"></div>
-
-    <button id="menu-trigger" class="control-btn" title="更多">
-      <div id="menu-icon" class="i-ri:more-fill transition-all duration-500"></div>
-    </button>
-
-    <div class="divider"></div>
-
-    <button id="back-to-top" class="control-btn" title="回到顶部">
-      <div class="i-ri:arrow-up-line"></div>
-    </button>
-  </div>
-</div>
+<button id="to-top-trigger" class="round-btn" title="回顶">
+  <div class="i-ri-arrow-up-line"></div>
+</button>
 
 <script>
-  function initControls() {
-    const container = document.getElementById('float-controls');
-    const bttBtn = document.getElementById('back-to-top');
-    const menuBtn = document.getElementById('menu-trigger');
-    const menuPopup = document.getElementById('more-menu');
-    const menuIcon = document.getElementById('menu-icon');
+  function initBackToTop() {
+    const btn = document.getElementById('to-top-trigger');
+    if (!btn) return;
 
-    if (!container || !bttBtn || !menuBtn || !menuPopup || !menuIcon) return;
-
+    btn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
     window.addEventListener('scroll', () => {
-      if (window.scrollY > 300) {
-        container.classList.add('visible');
-      } else {
-        container.classList.remove('visible');
-        menuPopup.classList.remove('is-open');
-        menuIcon.className = 'i-ri:more-fill transition-all duration-500';
-      }
+      const show = window.scrollY > 300;
+      btn.classList.toggle('show', show);
     }, { passive: true });
-
-    bttBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    menuBtn.onclick = (e) => {
-      e.stopPropagation();
-      const isOpen = menuPopup.classList.toggle('is-open');
-      if (isOpen) {
-        // 红色 X 切换，模拟液体流动的颜色变化
-        menuIcon.className = 'i-ri:close-line transition-all duration-500 text-red-500 rotate-90 scale-110';
-      } else {
-        menuIcon.className = 'i-ri:more-fill transition-all duration-500';
-      }
-    };
-
-    document.addEventListener('click', () => {
-      menuPopup.classList.remove('is-open');
-      menuIcon.className = 'i-ri:more-fill transition-all duration-500';
-    });
   }
-  document.addEventListener('astro:page-load', initControls);
-  initControls();
+
+  document.addEventListener('astro:page-load', initBackToTop);
+  initBackToTop();
 </script>
 
 <style>
   :root {
-    --capsule-padding-desktop: 0.4rem 0.7rem;
-    --btn-size-desktop: 2.2rem;
-    --menu-width-desktop: 150px;
-    --capsule-padding-mobile: 0.3rem 0.5rem; 
-    --btn-size-mobile: 1.9rem;
-    --menu-width-mobile: 125px;
+    --spring-ease: cubic-bezier(0.5, 1.7, 0.3, 0.8);
+    --btn-size: 44px;
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --text-color: #1d1d1f;
   }
 
-  /* 基础容器 */
-  .float-controls {
+  :global(.dark) {
+    --glass-bg: rgba(20, 20, 22, 0.45);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --text-color: #f5f5f7;
+  }
+
+  .round-btn {
     position: fixed;
-    left: 50%;
-    bottom: 2.5rem;
-    transform: translateX(-50%) translateY(30px);
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.8rem;
-    opacity: 0;
-    pointer-events: none;
-    /* iPhone 经典的流畅位移动画 */
-    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .float-controls.visible {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  /* 液态弹出菜单容器 */
-  .menu-popup-container {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
-                opacity 0.3s ease,
-                transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    opacity: 0;
-    transform: translateY(15px) scale(0.9);
-    transform-origin: bottom center;
-    width: var(--menu-width-desktop);
-  }
-
-  .menu-popup-container.is-open {
-    grid-template-rows: 1fr;
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-
-  /* 玻璃化菜单内容 */
-  .menu-content-wrapper {
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.65);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 0.5px solid rgba(255, 255, 255, 0.4);
-    border-radius: 1.5rem; /* 更圆润 */
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12),
-                inset 0 0 0 0.5px rgba(255, 255, 255, 0.2); /* 内部细微高光 */
-  }
-
-  :global(.dark) .menu-content-wrapper {
-    background: rgba(25, 25, 25, 0.7);
-    border-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
-  }
-
-  .menu-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.8rem 1rem;
-    color: currentColor;
-    text-decoration: none;
-    font-size: 0.9rem;
-    opacity: 0.8;
-    transition: all 0.2s;
-  }
-
-  .menu-item:hover {
-    opacity: 1;
-    background: rgba(125, 125, 125, 0.08);
-  }
-
-  /* 液态玻璃主胶囊 */
-  .buttons-capsule {
-    display: flex;
-    align-items: center;
-    padding: var(--capsule-padding-desktop);
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(25px) saturate(190%);
-    -webkit-backdrop-filter: blur(25px) saturate(190%);
-    border: 0.5px solid rgba(255, 255, 255, 0.4);
-    border-radius: 99rem;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08),
-                inset 0 0 0 0.5px rgba(255, 255, 255, 0.3);
-    gap: 0.3rem;
-  }
-
-  :global(.dark) .buttons-capsule {
-    background: rgba(30, 30, 30, 0.7);
-    border-color: rgba(255, 255, 255, 0.08);
-  }
-
-  /* 交互按钮样式 */
-  :global(.control-btn) {
-    width: var(--btn-size-desktop);
-    height: var(--btn-size-desktop);
+    /* 🔑 对齐 md:px-15 (3.75rem) */
+    right: 3.75rem; 
+    bottom: 1.5rem;
+    z-index: 10000;
+    width: var(--btn-size);
+    height: var(--btn-size);
     border-radius: 50%;
+    background: var(--glass-bg);
+    backdrop-filter: blur(40px) saturate(210%);
+    -webkit-backdrop-filter: blur(40px) saturate(210%);
+    border: 0.5px solid var(--glass-border);
+    color: var(--text-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
     cursor: pointer;
-    background: transparent;
-    border: none;
-    color: currentColor;
-    opacity: 0.65;
-    /* 模拟液体按压的弹性动画 */
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    transform: translateY(100px);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.6s var(--spring-ease), opacity 0.4s ease, background 0.2s ease;
   }
 
-  :global(.control-btn:hover) {
+  .round-btn.show {
+    transform: translateY(0);
     opacity: 1;
-    background: rgba(125, 125, 125, 0.1);
-    transform: scale(1.05);
+    pointer-events: auto;
   }
 
-  :global(.control-btn:active) {
-    transform: scale(0.85); /* 像气泡一样被按下去 */
-    opacity: 0.9;
-  }
+  .round-btn:active { transform: scale(0.85); }
 
-  /* 适配移动端 */
+  /* 🔑 适配 UnoCSS px-7 (1.75rem) */
   @media (max-width: 768px) {
-    .float-controls { bottom: 1.5rem; }
-    .buttons-capsule { padding: var(--capsule-padding-mobile); gap: 0.1rem; }
-    :global(.control-btn) {
-      width: var(--btn-size-mobile);
-      height: var(--btn-size-mobile);
-      font-size: 1rem;
+    :root { --btn-size: 40px; }
+    .round-btn {
+      right: 1.75rem;
+      bottom: 1.2rem;
     }
-    .menu-popup-container { width: var(--menu-width-mobile); }
-  }
-
-  /* 状态反馈图标 */
-  .text-red-500 { color: #ff3b30 !important; opacity: 1 !important; } /* iOS 标准红 */
-  .rotate-90 { transform: rotate(90deg) scale(1.1); }
-
-  /* 液态分割线 */
-  :global(.divider) {
-    width: 0.5px;
-    height: 1.2rem;
-    background: rgba(125, 125, 125, 0.2);
-    margin: 0 0.3rem;
-  }
-
-  .theme-wrapper :global(button) {
-    background: transparent !important;
-    border: none !important;
-    width: 100% !important;
-    height: 100% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    color: currentColor !important;
   }
 </style>

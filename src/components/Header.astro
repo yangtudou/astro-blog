@@ -2,71 +2,92 @@
 import Logo from '../components/Logo.astro'
 ---
 
-<header class="header-wrapper">
-  <a href="/" class="logo-link" aria-label="Home">
-    <Logo />
-  </a>
+<header class="header-root">
+  <div class="header-inner">
+    <a href="/" class="logo-link" aria-label="Home">
+      <Logo />
+    </a>
+  </div>
 </header>
 
 <style>
-  .header-wrapper {
+  .header-root {
+    /* 使用 sticky 确保它在页面顶端占位，不遮挡正文第一行 */
     position: sticky;
     top: 0;
     left: 0;
     right: 0;
     width: 100%;
-    z-index: 100;
+    z-index: 1000;
+
+    /* 尺寸定义 */
+    height: 100px;
     
-    /* 初始高度，由 JS 动态控制 */
+    /* 基础色彩：浅色模式 */
+    background-color: #ffffff;
+    color: #000000; /* 这里的 color 会传给 logo-link，进而传给 Logo */
+    
     display: flex;
     align-items: center;
     justify-content: center;
     
-    transition: none;
-    will-change: height;
+    /* 性能优化：切换主题时平滑一点 */
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+
+  /* Dark 模式适配 */
+  :global(.dark) .header-root {
+    background-color: #000000;
+    color: #ffffff;
+  }
+
+  .header-inner {
+    width: 100%;
+    height: 100%;
+    max-width: 1440px; /* 增加最大宽度限制，防止超大屏下视觉发散 */
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .logo-link {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
     
-    /* 由 JS 动态控制缩放 */
-    transition: none;
-    will-change: transform;
+    /* 继承 Header 的 color */
+    color: inherit; 
+    
+    /* 交互：按压感 */
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* 注入样式到 Logo 组件内部 */
+  .logo-link :global(svg) {
+    height: 3rem; /* 调大 Logo 视觉尺寸以匹配 100px 的 Header */
+    width: auto;
+    /* 🔑 强制让 Logo 内部路径听从 color 变量 */
+    fill: currentColor;
+    stroke: none; /* 暂时屏蔽掉边框线，由 fill 决定形状 */
+  }
+
+  .logo-link:hover {
+    transform: scale(1.02);
+  }
+
+  .logo-link:active {
+    transform: scale(0.92);
+  }
+
+  /* 移动端适配 */
+  @media (max-width: 768px) {
+    .header-root {
+      height: 80px;
+    }
+    .logo-link :global(svg) {
+      height: 2.2rem;
+    }
   }
 </style>
-
-<script>
-  function initHeader() {
-    const header = document.querySelector('.header-wrapper');
-    const logo = document.querySelector('.logo-link');
-    if (!header || !logo) return;
-
-    // 配置参数
-    const START_HEIGHT = 200;     // 初始高度 (px)
-    const END_HEIGHT = 72;        // 最终高度 (px) 4.5rem
-    const START_SCALE = 2;        // Logo 初始缩放
-    const END_SCALE = 1;          // Logo 最终缩放
-    const SCROLL_RANGE = 200;     // 动画完成需要的滚动距离 (px)
-
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      
-      // 计算进度 (0-1 之间)
-      const progress = Math.min(scrollY / SCROLL_RANGE, 1);
-      
-      // 线性插值：Header 高度
-      const currentHeight = START_HEIGHT - (START_HEIGHT - END_HEIGHT) * progress;
-      header.style.height = `${currentHeight}px`;
-      
-      // 线性插值：Logo 缩放
-      const currentScale = START_SCALE - (START_SCALE - END_SCALE) * progress;
-      logo.style.transform = `scale(${currentScale})`;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    handleScroll(); // 初始化
-  }
-
-  document.addEventListener('astro:page-load', initHeader);
-  initHeader();
-</script>
