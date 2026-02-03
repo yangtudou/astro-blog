@@ -4,10 +4,13 @@
   excerpt: "时间若是沙粒，过去未来都将成为沙漠，此刻即绿洲。"
   draft: false
 
-- title: "夜鹿乐队"
+- title: 说吧
   cover: "./images/夜鹿乐队-前世cover.jpeg"
-  publishDate: 2025-09-01
-  excerpt: "最近很迷夜鹿乐队，在他们的音乐里，有我爱的夏天。"
+  publishDate: 2024-05-11
+  excerpt: |
+    最真的很迷夜鹿。
+    夏天在他们的歌声里获得了永生。
+    什么都可以是虚无的，回忆却一定是真的。
   draft: false
 
 - title: "广州高架"
