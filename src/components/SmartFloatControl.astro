@@ -4,19 +4,18 @@ import LiquidGlassBase from './LiquidGlassBase.vue';
 
 <div class="float-controls-container">
   <div class="left-action">
-    <LiquidGlassBase client:load expandedWidth="160px">
+    <LiquidGlassBase client:load expandedWidth="220px" expandedHeight="auto" id="glass-island">
       <div class="island-content-wrapper">
         <div class="capsule-dock">
           <div class="i-ri-more-fill"></div>
         </div>
-
         <div class="expand-wrapper">
           <div class="expanded-content">
             <nav class="inner-menu-list">
-              <a href="/" class="menu-item"><span>首页</span><div class="i-ri-home-5-line"></div></a>
-              <a href="/posts" class="menu-item"><span>文章</span><div class="i-ri-article-line"></div></a>
-              <a href="/about" class="menu-item"><span>关于</span><div class="i-ri-user-3-line"></div></a>
-              <a href="https://github.com/yangtudou" target="_blank" class="menu-item"><span>GitHub</span><div class="i-ri-github-line"></div></a>
+              <a href="/" class="menu-item nav-link"><div class="icon-box"><div class="i-ri-home-5-line"></div></div><span>首页</span></a>
+              <a href="/posts" class="menu-item nav-link"><div class="icon-box"><div class="i-ri-article-line"></div></div><span>文章</span></a>
+              <a href="/about" class="menu-item nav-link"><div class="icon-box"><div class="i-ri-user-3-line"></div></div><span>关于</span></a>
+              <a href="https://github.com/yangtudou" target="_blank" class="menu-item nav-link"><div class="icon-box"><div class="i-ri-github-line"></div></div><span>GitHub</span></a>
             </nav>
           </div>
         </div>
@@ -25,110 +24,52 @@ import LiquidGlassBase from './LiquidGlassBase.vue';
   </div>
 </div>
 
+<script>
+  function handleMobileNav() {
+    const links = document.querySelectorAll('.nav-link');
+    links.forEach(link => {
+      link.addEventListener('click', async (e) => {
+        const href = link.getAttribute('href');
+        const isExternal = link.getAttribute('target') === '_blank';
+        if (isExternal || !href || e.metaKey || e.ctrlKey) return;
+        e.preventDefault();
+        document.dispatchEvent(new MouseEvent('click'));
+        await new Promise(resolve => setTimeout(resolve, 600));
+        window.location.href = href;
+      });
+    });
+  }
+  document.addEventListener('astro:page-load', handleMobileNav);
+  handleMobileNav();
+</script>
+
 <style>
-  .float-controls-container {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 10000;
+  .float-controls-container { position: fixed; inset: 0; pointer-events: none; z-index: 10000; }
+  .left-action { position: absolute; bottom: 1.5rem; left: 3.75rem; pointer-events: auto; transition: transform 0.4s ease; }
+
+  /* 🔑 关键修复：使用 #glass-island 隔离样式，不干扰回到顶部 */
+  #glass-island :global(.glass-shell) {
+    transform-origin: bottom left;
+    border-radius: 50% !important;
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  }
+  #glass-island :global(.is-expanded.glass-shell) {
+    border-radius: 28px !important;
+    transform: translate(0, -10px) !important;
   }
 
-  .left-action {
-    position: absolute;
-    bottom: 1.5rem;
-    left: 3.75rem; 
-    pointer-events: auto;
-  }
-
-  .island-content-wrapper {
-    width: 100%;
-    height: 100%;
-  }
-
-  .capsule-dock {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.4s ease;
-    font-size: 1.2rem;
-    color: #1d1d1f;
-  }
-
-  :global(.dark) .capsule-dock {
-    color: #f5f5f7;
-  }
-
-  :global(.is-expanded) .capsule-dock {
-    opacity: 0;
-    transform: scale(0.4) translateY(20px);
-    pointer-events: none;
-  }
-
-  .expand-wrapper {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.6s cubic-bezier(0.5, 1.7, 0.3, 0.8);
-  }
-
-  :global(.is-expanded) .expand-wrapper {
-    grid-template-rows: 1fr;
-  }
-
-  .expanded-content {
-    overflow: hidden;
-  }
-
-  .inner-menu-list {
-    display: flex;
-    flex-direction: column;
-    padding: 0.8rem 0.6rem;
-  }
-
-  .menu-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.7rem 0.8rem;
-    color: #1d1d1f;
-    text-decoration: none;
-    font-size: 0.88rem;
-    font-weight: 600;
-    
-    /* 🔑 增强初始状态：更深的位移和微缩放，使回弹感更明显 */
-    transform: translateY(35px) scale(0.8);
-    opacity: 0;
-    transition: 
-      transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), 
-      opacity 0.4s ease;
-  }
-
-  :global(.dark) .menu-item {
-    color: #f5f5f7;
-  }
-
-  :global(.is-expanded) .menu-item {
-    transform: translateY(0) scale(1);
-    opacity: 1;
-  }
-
-  /* 🔑 优化交错延迟时间，使节奏感更鲜明 */
-  .menu-item:nth-child(1) { transition-delay: 80ms; }
-  .menu-item:nth-child(2) { transition-delay: 140ms; }
-  .menu-item:nth-child(3) { transition-delay: 200ms; }
-  .menu-item:nth-child(4) { transition-delay: 260ms; }
-
-  /* 🔑 移除 hover 时的平移动画，仅保留微小的亮度变化（可选） */
-  .menu-item:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-  }
-
-  @media (max-width: 768px) {
-    .left-action { 
-      left: 1.75rem;
-      bottom: 1.2rem; 
-    }
-  }
+  .capsule-dock { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; transition: all 0.4s ease; font-size: 1.4rem; color: #1d1d1f; }
+  :global(.dark) .capsule-dock { color: #f5f5f7; }
+  :global(.is-expanded) .capsule-dock { opacity: 0; transform: scale(0.5); pointer-events: none; }
+  .expand-wrapper { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  :global(.is-expanded) .expand-wrapper { grid-template-rows: 1fr; }
+  .expanded-content { overflow: hidden; }
+  .inner-menu-list { display: flex; flex-direction: column; padding: 1.2rem 1rem; gap: 0.2rem; }
+  .menu-item { display: flex; align-items: center; justify-content: flex-start; padding: 0.8rem 1rem; color: #1d1d1f; text-decoration: none; font-size: 1rem; font-weight: 500; border-radius: 16px; transform: translateY(20px); opacity: 0; transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s ease; }
+  .icon-box { margin-right: 12px; font-size: 1.2rem; display: flex; align-items: center; opacity: 0.7; }
+  :global(.dark) .menu-item { color: #f5f5f7; }
+  :global(.is-expanded) .menu-item { transform: translateY(0); opacity: 1; }
+  .menu-item:active { background: rgba(0, 0, 0, 0.05); transform: scale(0.98); }
+  :global(.dark) .menu-item:active { background: rgba(255, 255, 255, 0.1); }
+  @media (max-width: 768px) { .left-action { left: 1.75rem; bottom: 2rem; } }
 </style>

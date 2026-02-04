@@ -14,40 +14,49 @@ function formatDate(date: Date | string) {
   const d = new Date(date);
   const currentYear = new Date().getFullYear();
   return d.getFullYear() === currentYear 
-    ? `${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`
-    : `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+    ? `${(d.getMonth() + 1).toString().padStart(2, '0')}.${d.getDate().toString().padStart(2, '0')}`
+    : `${d.getFullYear()}.${(d.getMonth() + 1).toString().padStart(2, '0')}`;
 }
 ---
 
 <ImageGallery selector=".talk-image-box" />
 
-<div class="talk-list w-full mt-10">
+<div class="talk-list w-full">
   <div class="talks-grid">
     {allTalksList.map((talk, idx) => (
-      <div class="talk-item slide-enter" style={`--enter-stage: ${idx + 1}; --enter-step: 100ms;`}>
-        <div class="talk-container">
-          <div class="talk-top-row">
-            <span class="talk-title">{talk.title}</span>
-            <span class="talk-date">{formatDate(talk.publishDate)}</span>
+      <article 
+        class="talk-card slide-enter" 
+        style={`--enter-stage: ${idx + 1};`}
+      >
+        {/* 图片容器 - 主角 */}
+        <div class="image-container talk-image-box is-square">
+          <Image 
+            src={talk.cover} 
+            alt={talk.title} 
+            width={900} 
+            height={1100}
+            class="card-image talk-img"
+          />
+          
+          {/* 图片上的元信息 - 右下角水印 */}
+          <div class="image-overlay">
+            <span class="overlay-date">{formatDate(talk.publishDate)}</span>
           </div>
-
-          <div class="talk-image-box is-square">
-            <Image 
-              src={talk.cover} 
-              alt={talk.title} 
-              width={1000} 
-              height={1250}
-              class="talk-img"
-            />
-          </div>
-
-          {talk.excerpt && (
-            <div class="talk-bottom-row">
-              <p class="talk-excerpt">{talk.excerpt}</p>
-            </div>
-          )}
         </div>
-      </div>
+
+        {/* 短诗文区域 - 配角但重要 */}
+        {talk.excerpt && (
+          <div class="poem-section">
+            <p class="poem-text">{talk.excerpt}</p>
+            
+            {/* 细线装饰 */}
+            <div class="divider"></div>
+            
+            {/* 底部标题 - 极弱化 */}
+            <span class="poem-title">{talk.title}</span>
+          </div>
+        )}
+      </article>
     ))}
   </div>
 </div>
@@ -74,107 +83,226 @@ function formatDate(date: Date | string) {
 </script>
 
 <style>
-  /* --- 响应式网格核心逻辑 --- */
+  /* --- 容器 --- */
   .talk-list {
     width: 100%;
     box-sizing: border-box;
+    padding: 3rem 0;
   }
 
+  /* --- 网格布局 --- */
   .talks-grid {
     display: grid;
-    /* 🔑 自动伸缩算法：
-       使用 1fr 确保卡片平分剩余空间，填充 BaseLayout 的宽度。
-       在 1440px 的容器下，会自动呈现 4 列效果。
-    */
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 3rem 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 5rem 3.5rem;
+    max-width: 1400px;
+    margin: 0 auto;
   }
 
-  /* 针对平板和手机的微调 */
   @media (max-width: 768px) {
     .talks-grid {
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 2rem 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 4.5rem 2.5rem;
     }
   }
 
   @media (max-width: 480px) {
     .talks-grid {
-      grid-template-columns: 1fr; /* 移动端单列铺满 */
+      grid-template-columns: 1fr;
+      gap: 4.5rem;
+    }
+    
+    .talk-list {
+      padding: 2.5rem 0;
     }
   }
 
-  /* --- 内容卡片样式 --- */
-  .talk-container { 
+  /* --- 卡片容器 --- */
+  .talk-card {
     display: flex;
-    flex-direction: column; 
-    width: 100%; 
-  }
-  
-  .talk-top-row { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: baseline;
-    margin-bottom: 0.6rem; 
+    flex-direction: column;
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
   }
 
-  .talk-title { 
-    font-size: 0.8rem; 
-    opacity: 0.4; 
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding-right: 8px;
-  }
-
-  .talk-date { 
-    font-size: 0.7rem; 
-    font-family: monospace; 
-    opacity: 0.25; 
-    flex-shrink: 0;
-  }
-
-  .talk-image-box {
+  /* --- 图片容器 - 主角 --- */
+  .image-container {
+    position: relative;
     width: 100%;
     overflow: hidden;
-    background-color: transparent;
+    background: var(--image-bg, #f8f8f8);
     cursor: zoom-in;
-    /* 比例切换动画过渡  */
-    transition: aspect-ratio 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .is-square { aspect-ratio: 1 / 1; }
-  .talk-image-box:not(.is-square) { aspect-ratio: 3 / 4.2; }
+  .is-square { 
+    aspect-ratio: 1 / 1; 
+  }
+  
+  .talk-image-box:not(.is-square) { 
+    aspect-ratio: 3 / 4; 
+  }
 
-  .talk-img {
+  .card-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  .talk-bottom-row { margin-top: 1rem; }
-  .talk-excerpt { 
+  .image-container:hover .card-image {
+    transform: scale(1.03);
+  }
+
+  /* --- 图片上的元信息 - 右下角水印 --- */
+  .image-overlay {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    padding: 0.75rem 1rem;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.4) 0%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .image-container:hover .image-overlay {
+    opacity: 1;
+  }
+
+  .overlay-date {
+    font-size: 0.65rem;
+    font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  /* --- 短诗文区域 - 配角但重要 --- */
+  .poem-section {
+    margin-top: 2.5rem;
+    padding: 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .poem-text {
     font-size: 0.95rem;
-    line-height: 1.6; 
-    opacity: 0.7;
-    text-align: left; 
+    line-height: 1.85;
+    color: var(--text-primary, #2a2a2a);
+    opacity: 0.88;
+    text-align: center;
     margin: 0;
-    /* 限制行数防止长短不一破坏美感 */
+    font-family: 'Georgia', 'Baskerville', 'Times New Roman', serif;
+    letter-spacing: 0.02em;
+    max-width: 400px;
+    /* 限制行数 */
     display: -webkit-box;
-    -webkit-line-clamp: 4;
+    -webkit-line-clamp: 5;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
 
-  /* --- 入场动画 --- */
-  .slide-enter {
-    animation: slide-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-    animation-delay: calc(var(--enter-stage) * 50ms);
+  /* --- 细线装饰 --- */
+  .divider {
+    width: 40px;
+    height: 1px;
+    background: var(--divider-color, rgba(0, 0, 0, 0.15));
   }
 
-  @keyframes slide-up {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+  /* --- 底部标题 - 极度弱化 --- */
+  .poem-title {
+    font-size: 0.65rem;
+    font-weight: 400;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-tertiary, #999);
+    opacity: 0.5;
+    text-align: center;
+  }
+
+  /* --- 入场动画 --- */
+  .slide-enter {
+    animation: fadeInUp 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+    animation-delay: calc(var(--enter-stage) * 80ms);
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* --- 暗色模式 --- */
+  @media (prefers-color-scheme: dark) {
+    .image-container {
+      background: var(--image-bg, #0a0a0a);
+    }
+
+    .poem-text {
+      color: var(--text-primary, #e8e8e8);
+      opacity: 0.9;
+    }
+
+    .divider {
+      background: var(--divider-color, rgba(255, 255, 255, 0.2));
+    }
+
+    .poem-title {
+      color: var(--text-tertiary, #666);
+    }
+
+    .image-overlay {
+      background: linear-gradient(
+        to top,
+        rgba(0, 0, 0, 0.6) 0%,
+        rgba(0, 0, 0, 0) 100%
+      );
+    }
+
+    .overlay-date {
+      color: rgba(255, 255, 255, 0.9);
+    }
+  }
+
+  /* --- 移动端优化 --- */
+  @media (max-width: 480px) {
+    .poem-section {
+      margin-top: 2rem;
+      padding: 0 1.25rem;
+      gap: 1.25rem;
+    }
+
+    .poem-text {
+      font-size: 0.9rem;
+      line-height: 1.75;
+      max-width: 100%;
+      -webkit-line-clamp: 4;
+    }
+
+    .divider {
+      width: 35px;
+    }
+
+    .poem-title {
+      font-size: 0.6rem;
+    }
+
+    .overlay-date {
+      font-size: 0.6rem;
+    }
   }
 </style>
