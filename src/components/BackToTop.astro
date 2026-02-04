@@ -1,20 +1,27 @@
 ---
-// BackToTop.astro
+import LiquidGlassBase from './LiquidGlassBase.vue';
 ---
 
-<button id="to-top-trigger" class="round-btn" title="回顶">
-  <div class="i-ri-arrow-up-line"></div>
-</button>
+<div id="to-top-trigger" class="backtop-wrapper">
+  <LiquidGlassBase client:load toggleOnClick={false}>
+    <div class="icon-container">
+      <div class="i-ri-arrow-up-line"></div>
+    </div>
+  </LiquidGlassBase>
+</div>
 
 <script>
   function initBackToTop() {
-    const btn = document.getElementById('to-top-trigger');
-    if (!btn) return;
+    const root = document.getElementById('to-top-trigger');
+    if (!root) return;
 
-    btn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+    root.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
     window.addEventListener('scroll', () => {
       const show = window.scrollY > 300;
-      btn.classList.toggle('show', show);
+      root.style.transform = show ? 'translateY(0)' : 'translateY(100px)';
+      root.style.opacity = show ? '1' : '0';
+      root.style.pointerEvents = show ? 'auto' : 'none';
     }, { passive: true });
   }
 
@@ -23,57 +30,28 @@
 </script>
 
 <style>
-  :root {
-    --spring-ease: cubic-bezier(0.5, 1.7, 0.3, 0.8);
-    --btn-size: 44px;
-    --glass-bg: rgba(255, 255, 255, 0.25);
-    --glass-border: rgba(255, 255, 255, 0.4);
-    --text-color: #1d1d1f;
-  }
-
-  :global(.dark) {
-    --glass-bg: rgba(20, 20, 22, 0.45);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --text-color: #f5f5f7;
-  }
-
-  .round-btn {
+  .backtop-wrapper {
     position: fixed;
-    /* 🔑 对齐 md:px-15 (3.75rem) */
-    right: 3.75rem; 
+    right: 3.75rem;
     bottom: 1.5rem;
     z-index: 10000;
-    width: var(--btn-size);
-    height: var(--btn-size);
-    border-radius: 50%;
-    background: var(--glass-bg);
-    backdrop-filter: blur(40px) saturate(210%);
-    -webkit-backdrop-filter: blur(40px) saturate(210%);
-    border: 0.5px solid var(--glass-border);
-    color: var(--text-color);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-    transform: translateY(100px);
     opacity: 0;
-    pointer-events: none;
-    transition: transform 0.6s var(--spring-ease), opacity 0.4s ease, background 0.2s ease;
+    transform: translateY(100px);
+    transition: all 0.6s cubic-bezier(0.5, 1.7, 0.3, 0.8);
   }
 
-  .round-btn.show {
-    transform: translateY(0);
-    opacity: 1;
-    pointer-events: auto;
+  .icon-container {
+    display: flex;
+    font-size: 1.4rem;
+    color: #1d1d1f;
   }
 
-  .round-btn:active { transform: scale(0.85); }
+  :global(.dark) .icon-container {
+    color: #f5f5f7;
+  }
 
-  /* 🔑 适配 UnoCSS px-7 (1.75rem) */
   @media (max-width: 768px) {
-    :root { --btn-size: 40px; }
-    .round-btn {
+    .backtop-wrapper {
       right: 1.75rem;
       bottom: 1.2rem;
     }

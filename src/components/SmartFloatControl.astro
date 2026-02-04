@@ -1,78 +1,31 @@
 ---
-// SmartFloatControl.astro
+import LiquidGlassBase from './LiquidGlassBase.vue';
 ---
 
-<div id="float-controls" class="float-controls-container">
+<div class="float-controls-container">
   <div class="left-action">
-    <div class="buttons-capsule" id="main-island">
-      <div class="glass-gloss-layer"></div>
-      
-      <div class="expand-wrapper">
-        <div class="expanded-content">
-          <div class="inner-menu-list">
-            <a href="/" class="menu-item"><span>首页</span><div class="i-ri-home-5-line"></div></a>
-            <a href="/posts" class="menu-item"><span>文章</span><div class="i-ri-article-line"></div></a>
-            <a href="/about" class="menu-item"><span>关于</span><div class="i-ri-user-3-line"></div></a>
-            <a href="https://github.com/yangtudou" target="_blank" class="menu-item"><span>GitHub</span><div class="i-ri-github-line"></div></a>
+    <LiquidGlassBase client:load expandedWidth="160px">
+      <div class="island-content-wrapper">
+        <div class="capsule-dock">
+          <div class="i-ri-more-fill"></div>
+        </div>
+
+        <div class="expand-wrapper">
+          <div class="expanded-content">
+            <nav class="inner-menu-list">
+              <a href="/" class="menu-item"><span>首页</span><div class="i-ri-home-5-line"></div></a>
+              <a href="/posts" class="menu-item"><span>文章</span><div class="i-ri-article-line"></div></a>
+              <a href="/about" class="menu-item"><span>关于</span><div class="i-ri-user-3-line"></div></a>
+              <a href="https://github.com/yangtudou" target="_blank" class="menu-item"><span>GitHub</span><div class="i-ri-github-line"></div></a>
+            </nav>
           </div>
         </div>
       </div>
-
-      <div class="capsule-dock" id="trigger-container">
-        <button id="expand-trigger" class="island-btn-main" title="更多">
-          <div class="i-ri-more-fill" id="more-icon"></div>
-        </button>
-      </div>
-    </div>
+    </LiquidGlassBase>
   </div>
 </div>
 
-<script>
-  function initLiquidLayout() {
-    const island = document.getElementById('main-island');
-    const triggerContainer = document.getElementById('trigger-container');
-    const expandBtn = document.getElementById('expand-trigger');
-    const menuItems = document.querySelectorAll('.menu-item');
-    if (!island || !expandBtn || !triggerContainer) return;
-
-    let isExpanded = false;
-    const toggleMenu = (expand: boolean) => {
-      isExpanded = expand;
-      island.classList.toggle('is-expanded', expand);
-      triggerContainer.style.opacity = expand ? '0' : '1';
-      triggerContainer.style.transform = expand ? 'scale(0.6) translateY(10px)' : 'scale(1) translateY(0)';
-      triggerContainer.style.pointerEvents = expand ? 'none' : 'auto';
-      menuItems.forEach((item, index) => {
-        (item as HTMLElement).style.transitionDelay = expand ? `${index * 50 + 120}ms` : '0ms';
-      });
-    };
-
-    expandBtn.onclick = (e) => { e.stopPropagation(); toggleMenu(true); };
-    document.addEventListener('click', (e) => {
-      if (isExpanded && !island.contains(e.target as Node)) toggleMenu(false);
-    });
-    window.addEventListener('scroll', () => { if (isExpanded) toggleMenu(false); }, { passive: true });
-  }
-
-  document.addEventListener('astro:page-load', initLiquidLayout);
-  initLiquidLayout();
-</script>
-
 <style>
-  :root {
-    --spring-ease: cubic-bezier(0.5, 1.7, 0.3, 0.8);
-    --btn-size: 44px;
-    --glass-bg: rgba(255, 255, 255, 0.25);
-    --glass-border: rgba(255, 255, 255, 0.4);
-    --text-color: #1d1d1f;
-  }
-
-  :global(.dark) {
-    --glass-bg: rgba(20, 20, 22, 0.45);
-    --glass-border: rgba(255, 255, 255, 0.1);
-    --text-color: #f5f5f7;
-  }
-
   .float-controls-container {
     position: fixed;
     inset: 0;
@@ -83,69 +36,14 @@
   .left-action {
     position: absolute;
     bottom: 1.5rem;
-    /* 🔑 关键修改：对齐 md:px-15 (3.75rem) */
     left: 3.75rem; 
     pointer-events: auto;
   }
 
-  .buttons-capsule {
-    position: relative;
-    width: var(--btn-size);
-    height: var(--btn-size);
-    background: var(--glass-bg);
-    backdrop-filter: blur(40px) saturate(210%);
-    -webkit-backdrop-filter: blur(40px) saturate(210%);
-    border: 0.5px solid var(--glass-border);
-    border-radius: 50%;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
-    transition: width 0.6s var(--spring-ease), height 0.6s var(--spring-ease), border-radius 0.6s var(--spring-ease), transform 0.5s var(--spring-ease);
-    overflow: hidden;
-    /* 🔑 关键修改：固定变换原点在左下角，确保向上弹开 */
-    transform-origin: bottom left; 
+  .island-content-wrapper {
+    width: 100%;
+    height: 100%;
   }
-
-  .buttons-capsule.is-expanded {
-    width: 140px;
-    height: auto;
-    border-radius: 20px;
-    transform: translateY(-5px);
-  }
-
-  .expand-wrapper {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.6s var(--spring-ease);
-  }
-
-  .is-expanded .expand-wrapper { grid-template-rows: 1fr; }
-  .expanded-content { overflow: hidden; }
-
-  .inner-menu-list {
-    display: flex;
-    flex-direction: column;
-    padding: 0.8rem 0.5rem;
-  }
-
-  .menu-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.6rem 0.8rem;
-    color: var(--text-color);
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 600;
-    transform: translateY(20px);
-    opacity: 0;
-    transition: transform 0.6s var(--spring-ease), opacity 0.4s ease;
-  }
-
-  .is-expanded .menu-item {
-    transform: translateY(0);
-    opacity: 1;
-  }
-
-  .menu-item:hover { transform: translateX(5px); }
 
   .capsule-dock {
     position: absolute;
@@ -153,26 +51,83 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 2;
+    transition: all 0.4s ease;
+    font-size: 1.2rem;
+    color: #1d1d1f;
   }
 
-  .island-btn-main {
-    width: 100%;
-    height: 100%;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    color: var(--text-color);
+  :global(.dark) .capsule-dock {
+    color: #f5f5f7;
+  }
+
+  :global(.is-expanded) .capsule-dock {
+    opacity: 0;
+    transform: scale(0.4) translateY(20px);
+    pointer-events: none;
+  }
+
+  .expand-wrapper {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.6s cubic-bezier(0.5, 1.7, 0.3, 0.8);
+  }
+
+  :global(.is-expanded) .expand-wrapper {
+    grid-template-rows: 1fr;
+  }
+
+  .expanded-content {
+    overflow: hidden;
+  }
+
+  .inner-menu-list {
+    display: flex;
+    flex-direction: column;
+    padding: 0.8rem 0.6rem;
+  }
+
+  .menu-item {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
+    padding: 0.7rem 0.8rem;
+    color: #1d1d1f;
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    
+    /* 🔑 增强初始状态：更深的位移和微缩放，使回弹感更明显 */
+    transform: translateY(35px) scale(0.8);
+    opacity: 0;
+    transition: 
+      transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), 
+      opacity 0.4s ease;
   }
 
-  /* 🔑 适配 UnoCSS px-7 (1.75rem) */
+  :global(.dark) .menu-item {
+    color: #f5f5f7;
+  }
+
+  :global(.is-expanded) .menu-item {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+
+  /* 🔑 优化交错延迟时间，使节奏感更鲜明 */
+  .menu-item:nth-child(1) { transition-delay: 80ms; }
+  .menu-item:nth-child(2) { transition-delay: 140ms; }
+  .menu-item:nth-child(3) { transition-delay: 200ms; }
+  .menu-item:nth-child(4) { transition-delay: 260ms; }
+
+  /* 🔑 移除 hover 时的平移动画，仅保留微小的亮度变化（可选） */
+  .menu-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+  }
+
   @media (max-width: 768px) {
-    :root { --btn-size: 40px; }
     .left-action { 
-      left: 1.75rem; 
+      left: 1.75rem;
       bottom: 1.2rem; 
     }
   }
