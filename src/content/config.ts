@@ -22,10 +22,12 @@ const talkCollection = defineCollection({
   schema: ({ image }) => z.array(
     z.object({
       title: z.string(),
-      cover: image(), 
-      publishDate: z.coerce.date(), // 自动处理 YAML 中的日期字符串
+      cover: image(),
+      publishDate: z.coerce.date(),
       excerpt: z.string().optional(),
       draft: z.boolean().optional().default(false),
+      /** 正文对齐：left 左对齐，center 居中。不填默认 left */
+      align: z.enum(['left', 'center']).optional().default('left'),
     })
   ),
 });

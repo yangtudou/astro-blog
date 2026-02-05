@@ -1,14 +1,17 @@
 - title: "此刻绿洲"
   cover: "./images/2026-01-31_此刻绿洲.jpeg"
   publishDate: 2026-01-31
+  align: center
   excerpt: |
-    时间若是沙粒，过去未来都将成为沙漠，
+    时间若是沙粒，
+    过去未来都将成为沙漠，
     此刻即绿洲。
   draft: false
 
 - title: 说吧
   cover: "./images/夜鹿乐队-前世cover.jpeg"
   publishDate: 2024-05-11
+  align: center
   excerpt: |
     最真的很迷夜鹿。
     夏天在他们的歌声里获得了永生。
@@ -27,57 +30,4 @@
   excerpt: "从脆上 down 的图，感觉好夏天！好安静。"
   draft: false
 
-- title: "接天莲叶"
-  cover: './images/接天莲叶.jpeg'
-  publishDate: 2025-08-01
-  excerpt: "从脆上 down 的图，感觉好夏天！好安静。"
-  draft: false
-
-- title: "接天莲叶"
-  cover: './images/接天莲叶.jpeg'
-  publishDate: 2025-08-01
-  excerpt: "从脆上 down 的图，感觉好夏天！好安静。"
-  draft: false
-
-- title: "接天莲叶"
-  cover: './images/接天莲叶.jpeg'
-  publishDate: 2025-08-01
-  excerpt: "从脆上 down 的图，感觉好夏天！好安静。"
-  draft: false
-
-- title: "接天莲叶"
-  cover: './images/接天莲叶.jpeg'
-  publishDate: 2025-08-01
-  excerpt: "从脆上 down 的图，感觉好夏天！好安静。"
-  draft: false
-
-- title: "接天莲叶"
-  cover: './images/接天莲叶.jpeg'
-  publishDate: 2025-08-01
-  excerpt: "从脆上 down 的图，感觉好夏天！好安静。"
-  draft: false
-
-- title: "接天莲叶"
-  cover: './images/接天莲叶.jpeg'
-  publishDate: 2025-08-01
-  excerpt: "从脆上 down 的图，感觉好夏天！好安静。"
-  draft: false
-
-- title: "接天莲叶"
-  cover: './images/接天莲叶.jpeg'
-  publishDate: 2025-08-01
-  excerpt: "从脆上 down 的图，感觉好夏天！好安静。"
-  draft: false
-
-- title: "接天莲叶"
-  cover: './images/接天莲叶.jpeg'
-  publishDate: 2025-08-01
-  excerpt: "从脆上 down 的图，感觉好夏天！好安静。"
-  draft: false
-
-- title: "接天莲叶"
-  cover: './images/接天莲叶.jpeg'
-  publishDate: 2025-08-01
-  excerpt: "从脆上 down 的图，感觉好夏天！好安静。"
-  draft: false
 
