@@ -2,6 +2,9 @@
 import { getCollection } from 'astro:content'
 import { Image } from 'astro:assets'
 
+import ImageGallery from './ImageGallery.astro';
+import SmartFloatControl from './SmartFloatControl.astro';
+
 const allTalksEntries = await getCollection('talk');
 const allTalksList = allTalksEntries
   .flatMap(entry => entry.data)
@@ -18,14 +21,16 @@ function formatDate(date: Date | string) {
   <div class="max-w-md mx-auto sm:max-w-2xl md:max-w-5xl xl:max-w-7xl grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-12 justify-items-center">
     {allTalksList.map((talk, index) => (
       <article 
-        class="talk-card relative flex flex-col items-center justify-between w-full aspect-[2/3] bg-gray-50 dark:bg-gray-800/30 rounded-lg p-8 sm:p-10 transition-all duration-1000 ease-in-out border border-transparent"
+        class="talk-card relative flex flex-col justify-center w-full aspect-[2/3] bg-gray-50 dark:bg-gray-800/30 rounded-xl p-8 sm:p-10 transition-all duration-1000 ease-in-out border border-transparent"
         data-index={index}
       >
-        {/* 内容中心容器：通过 flex-1 确保视觉重心的绝对垂直居中 */}
-        <div class="flex-1 w-full flex flex-col items-center justify-center">
-          <div class="w-[85%] flex flex-col">
+        {/* 核心内容容器：使用 gap 控制封面与摘要的间距 */}
+        <div class="flex flex-col items-center gap-6">
+          
+          {/* 1. 封面与标题部分 */}
+          <div class="w-[75%] flex flex-col">
             {talk.cover && (
-              <div class="relative overflow-hidden shadow-2xl shadow-black/5">
+              <div class="relative overflow-hidden shadow-2xl shadow-black/5 talk-image-box">
                 <Image
                   src={talk.cover}
                   alt={talk.title}
@@ -37,8 +42,8 @@ function formatDate(date: Date | string) {
               </div>
             )}
             
-            <div class="flex justify-between items-center mt-2 w-full opacity-40">
-              <span class="text-[9px] font-mono tracking-widest uppercase truncate mr-4">
+            <div class="flex justify-between items-center mt-2 w-full opacity-20">
+              <span class="text-[9px] tracking-widest uppercase truncate mr-4">
                 {talk.title}
               </span>
               <time class="text-[9px] font-mono">
@@ -46,32 +51,26 @@ function formatDate(date: Date | string) {
               </time>
             </div>
           </div>
-        </div>
 
-        {/* 摘要文本：去除了所有干扰因素，确保对齐 */}
-        {talk.excerpt && (
-          <div class="w-full mt-6 flex justify-center items-start">
-            <p class={`
-              text-[13px] xl:text-[12px] 
-              leading-[2.6] tracking-[0.15em]
-              text-gray-600 dark:text-gray-300
-              whitespace-pre-line [text-wrap:balance]
-              [font-family:'Noto Serif SC','Source Han Serif SC','STSong',serif]
-              text-center m-0 p-0
-            `}>
-              {talk.excerpt}
-            </p>
-          </div>
-        )}
+          {/* 2. 摘要部分 */}
+          {talk.excerpt && (
+            <div class="w-full">
+              <p class="text-[13px] xl:text-[12px] leading-[2.6] mb-[-0.8em] tracking-[0.15em] text-gray-600 dark:text-gray-300 whitespace-pre-line [text-wrap:balance] text-center">
+                {talk.excerpt}
+              </p>
+            </div>
+          )}
+        </div>
       </article>
     ))}
   </div>
+  <ImageGallery selector=".talk-image-box" />
+  <SmartFloatControl />
 </section>
 
 <script>
   function applyImageTheme() {
     const images = document.querySelectorAll('.talk-image');
-    
     images.forEach((img) => {
       const updateTheme = () => {
         const canvas = document.createElement('canvas');
@@ -87,12 +86,9 @@ function formatDate(date: Date | string) {
         if (!card) return;
 
         const isDark = document.documentElement.classList.contains('dark');
-        
-        // 动态计算背景色：浅色模式透明度 0.08，深色模式 0.15
         const alpha = isDark ? 0.15 : 0.08;
-        card.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${alpha})`;
         
-        // 增加动态色彩边框
+        card.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${alpha})`;
         card.style.borderColor = `rgba(${r}, ${g}, ${b}, ${isDark ? 0.2 : 0.1})`;
         card.style.borderWidth = '1px';
         card.style.borderStyle = 'solid';
@@ -106,7 +102,6 @@ function formatDate(date: Date | string) {
     });
   }
 
-  // 初始化并监听主题切换以实时更新色彩权重
   applyImageTheme();
   const observer = new MutationObserver(() => applyImageTheme());
   observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
@@ -115,9 +110,5 @@ function formatDate(date: Date | string) {
 <style>
   .talk-card {
     will-change: background-color;
-  }
-  /* 强制消除最后一行行高导致的视觉偏移 */
-  p:last-child {
-    margin-bottom: 0 !important;
   }
 </style>

@@ -170,15 +170,13 @@ const { selector = '.talk-image-box' } = Astro.props;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(50px) saturate(210%);
-    -webkit-backdrop-filter: blur(50px) saturate(210%);
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(50px) saturate(100%);
+    -webkit-backdrop-filter: blur(50px) saturate(100%);
     transition: opacity 0.4s ease;
     touch-action: none;
     cursor: zoom-out;
   }
-
-  :global(.dark) #lightbox-overlay { background: rgba(0, 0, 0, 0.85); }
 
   .lightbox-hidden { visibility: hidden; opacity: 0; pointer-events: none; }
   .lightbox-visible { visibility: visible; opacity: 1; pointer-events: auto; }
@@ -198,7 +196,7 @@ const { selector = '.talk-image-box' } = Astro.props;
     object-fit: contain;
     border-radius: 4px;
     /* 🔑 柔和的阴影，增加悬浮感 */
-    box-shadow: 0 40px 100px rgba(0,0,0,0.1);
+    box-shadow: 0 40px 100px rgba(0,0,0,0.5);
     will-change: transform, opacity;
   }
 
