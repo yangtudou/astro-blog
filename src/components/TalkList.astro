@@ -14,64 +14,110 @@ function formatDate(date: Date | string) {
 }
 ---
 
-<section class="w-full py-6 px-4 sm:py-12 sm:px-6">
-  <div class="max-w-md mx-auto sm:max-w-2xl md:max-w-5xl xl:max-w-7xl grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 sm:gap-10">
-    {allTalksList.map((talk) => (
-      <article class="relative w-full aspect-[3/4] overflow-hidden rounded-lg border border-stone-200 dark:border-stone-700">
-        {talk.cover && (
-          <div class="absolute inset-0 bg-stone-200 dark:bg-stone-800">
-            <Image
-              src={talk.cover}
-              alt={talk.title}
-              width={600}
-              height={800}
-              class="w-full h-full object-cover"
-            />
-          </div>
-        )}
-
-        <div
-          class="absolute inset-0 bg-gradient-to-t from-black/88 via-black/25 to-transparent dark:from-black/92 dark:via-black/35"
-          aria-hidden
-        />
-
-        {talk.excerpt && (
-          <div class="absolute inset-0 flex flex-col px-4 sm:px-5 xl:px-6 pt-12 sm:pt-14 pb-12 sm:pb-14 text-white">
-            <div class="flex-1 min-h-0 overflow-hidden flex flex-col justify-end">
-              <p
-                class={`w-full max-w-[24em] sm:max-w-[26em]
-                /* 移动端保持原样，桌面端(xl)调小字号与行高 */
-                text-[15px] sm:text-[17px] xl:text-[14px] 
-                leading-[2.15] sm:leading-[2.25] xl:leading-[1.8]
-                tracking-[0.04em] sm:tracking-[0.06em]
-                text-white/98
-                whitespace-pre-line break-words
-                [font-family:'Noto Serif SC','Source Han Serif SC','Source Han Serif CN','STSong',serif]
-                [text-shadow:0_1px_4px_rgba(0,0,0,0.7),0_0_20px_rgba(0,0,0,0.3)]
-                ${talk.align === 'center'
-                  ? 'text-center mx-auto [text-align-last:center]'
-                  : 'text-left [text-align:justify] [text-align-last:left]'
-                }`}
-              >
-                {talk.excerpt}
-              </p>
+<section class="w-full py-12 sm:py-20">
+  <div class="max-w-md mx-auto sm:max-w-2xl md:max-w-5xl xl:max-w-7xl grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-12 justify-items-center">
+    {allTalksList.map((talk, index) => (
+      <article 
+        class="talk-card relative flex flex-col items-center justify-between w-full aspect-[2/3] bg-gray-50 dark:bg-gray-800/30 rounded-lg p-8 sm:p-10 transition-all duration-1000 ease-in-out border border-transparent"
+        data-index={index}
+      >
+        {/* 内容中心容器：通过 flex-1 确保视觉重心的绝对垂直居中 */}
+        <div class="flex-1 w-full flex flex-col items-center justify-center">
+          <div class="w-[85%] flex flex-col">
+            {talk.cover && (
+              <div class="relative overflow-hidden shadow-2xl shadow-black/5">
+                <Image
+                  src={talk.cover}
+                  alt={talk.title}
+                  width={400}
+                  height={600}
+                  class="talk-image w-full h-auto object-contain rounded-sm"
+                  crossorigin="anonymous"
+                />
+              </div>
+            )}
+            
+            <div class="flex justify-between items-center mt-2 w-full opacity-40">
+              <span class="text-[9px] font-mono tracking-widest uppercase truncate mr-4">
+                {talk.title}
+              </span>
+              <time class="text-[9px] font-mono">
+                {formatDate(talk.publishDate)}
+              </time>
             </div>
           </div>
+        </div>
+
+        {/* 摘要文本：去除了所有干扰因素，确保对齐 */}
+        {talk.excerpt && (
+          <div class="w-full mt-6 flex justify-center items-start">
+            <p class={`
+              text-[13px] xl:text-[12px] 
+              leading-[2.6] tracking-[0.15em]
+              text-gray-600 dark:text-gray-300
+              whitespace-pre-line [text-wrap:balance]
+              [font-family:'Noto Serif SC','Source Han Serif SC','STSong',serif]
+              text-center m-0 p-0
+            `}>
+              {talk.excerpt}
+            </p>
+          </div>
         )}
-
-        <h2 class="absolute bottom-3 left-4 sm:bottom-4 sm:left-5 text-[10px] sm:text-[11px] font-light tracking-[0.18em] text-white/70 truncate max-w-[45%] [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]">
-          {talk.title}
-        </h2>
-
-        <time
-          class="absolute bottom-3 right-4 sm:bottom-4 sm:right-5
-            text-[10px] sm:text-[11px] font-mono tracking-[0.2em]
-            text-white/70 [text-shadow:0_1px_2px_rgba(0,0,0,0.8)]"
-          datetime={new Date(talk.publishDate).toISOString().slice(0, 10)}
-        >
-          {formatDate(talk.publishDate)}
-        </time>
       </article>
     ))}
   </div>
 </section>
+
+<script>
+  function applyImageTheme() {
+    const images = document.querySelectorAll('.talk-image');
+    
+    images.forEach((img) => {
+      const updateTheme = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        canvas.width = 1;
+        canvas.height = 1;
+        ctx.drawImage(img as HTMLImageElement, 0, 0, 1, 1);
+        const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+        
+        const card = img.closest('.talk-card') as HTMLElement;
+        if (!card) return;
+
+        const isDark = document.documentElement.classList.contains('dark');
+        
+        // 动态计算背景色：浅色模式透明度 0.08，深色模式 0.15
+        const alpha = isDark ? 0.15 : 0.08;
+        card.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        
+        // 增加动态色彩边框
+        card.style.borderColor = `rgba(${r}, ${g}, ${b}, ${isDark ? 0.2 : 0.1})`;
+        card.style.borderWidth = '1px';
+        card.style.borderStyle = 'solid';
+      };
+
+      if ((img as HTMLImageElement).complete) {
+        updateTheme();
+      } else {
+        img.addEventListener('load', updateTheme);
+      }
+    });
+  }
+
+  // 初始化并监听主题切换以实时更新色彩权重
+  applyImageTheme();
+  const observer = new MutationObserver(() => applyImageTheme());
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+</script>
+
+<style>
+  .talk-card {
+    will-change: background-color;
+  }
+  /* 强制消除最后一行行高导致的视觉偏移 */
+  p:last-child {
+    margin-bottom: 0 !important;
+  }
+</style>
